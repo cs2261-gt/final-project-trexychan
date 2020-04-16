@@ -111,12 +111,13 @@ typedef struct{
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
 # 2 "main.c" 2
 # 1 "game.h" 1
-# 25 "game.h"
-enum {PISTOL, SHOTGUN, MINIGUN};
+# 38 "game.h"
+enum {PISTOL=2, SHOTGUN=2*6, MINIGUN=5};
 enum {BEEMON};
-enum {GUNRIGHT, GUNLEFT, GUNJUMPR, GUNJUMPL, GUNIDLE};
-enum {ENEMYRIGHT=(GUNIDLE+1), ENEMYLEFT, ENEMYIDLE};
-enum {STAGE1, STAGE2, BOSS};
+enum {GUNRIGHT=1, GUNLEFT, GUNJUMPR, GUNJUMPL, GUNIDLE};
+enum {BEEMONRIGHT=1, BEEMONLEFT, BEEMONHITR, BEEMONHITL};
+enum {BOSSIDLE, BOSSATTACK};
+enum {STAGE1, BOSS};
 
 
 typedef struct {
@@ -128,7 +129,6 @@ typedef struct {
     int height;
     int hspd;
     int vspd;
-    int vdel;
     int jumping;
     int curFrame;
     int numFrames;
@@ -146,7 +146,17 @@ typedef struct {
 } PLAYER;
 
 typedef struct {
+    int enemies;
+    int pickups;
+    int playerSpawnCol;
+    int playerSpawnRow;
+    int levelHeight;
+    int levelWidth;
+} LEVEL;
+
+typedef struct {
     int timer;
+    int hitStun;
     int screenRow;
     int screenCol;
     int worldRow;
@@ -168,6 +178,16 @@ typedef struct {
 } ENEMY;
 
 typedef struct {
+    int screenRow;
+    int screenCol;
+    int worldRow;
+    int worldCol;
+    int width;
+    int height;
+    int dst;
+} DOOR;
+
+typedef struct {
     int worldRow;
     int worldCol;
     int screenRow;
@@ -183,6 +203,7 @@ typedef struct {
     int screenCol;
     int worldRow;
     int worldCol;
+    int bulletType;
     int width;
     int height;
     int active;
@@ -195,32 +216,34 @@ typedef struct {
 
 
 void initGame();
-void initPlayer();
-void initEnemies();
-void initEnemy(ENEMY *);
+void initLevels();
+void initPlayer(LEVEL);
+void initHealthBar();
+void initEnemies(LEVEL, ENEMY enemies[], int enemySpawns[], int enemyTypes[]);
+void initEnemy(ENEMY *, LEVEL);
 void initBullets();
 void initBullet(BULLET *);
 void fire();
-void spawnEnemyLoot(ENEMY *);
+void dropLoot(ENEMY *, LEVEL, LOOTBOX pickups[]);
 void initLootBoxes();
-void initLootBox(LOOTBOX *);
 
 
 
 void updateGame();
-void updatePlayer();
-void updateEnemies();
-void updateEnemy(ENEMY *);
+void updatePlayer(unsigned short collisionMap[], int levelHeight, int levelWidth);
+void updateEnemies(ENEMY enemies[], LEVEL);
+void updateEnemy(ENEMY *, LEVEL);
 void updateBullets();
 void updateBullet(BULLET *);
-void updateLootBox();
+void updateLootBox(LOOTBOX pickups[], LEVEL);
+void changeLevel();
 
 
 void drawGame();
 void drawPlayer();
-void drawEnemies();
+void drawEnemies(LEVEL, ENEMY enemies[]);
 void drawBullets();
-void drawLootBox();
+void drawLootBox(LOOTBOX pickups[], LEVEL);
 
 
 
@@ -230,13 +253,32 @@ void animateEnemy(ENEMY *);
 
 
 extern PLAYER player;
-extern BULLET pistolMag[9];
-extern BULLET shotgunMag[2];
-extern BULLET minigunMag[50];
+extern BULLET bullets[70];
 extern int playerHealth;
 extern int stage;
+extern int bossDefeated;
+
+
 extern ENEMY s1Enemies[];
 extern LOOTBOX s1Loot[];
+extern LEVEL stage1;
+extern int s1EnemySpawns[];
+extern DOOR stage1Exit;
+
+extern LEVEL boss;
+extern ENEMY bossEnemies[];
+extern LOOTBOX bossLoot[];
+
+
+
+void animateBeemon(ENEMY *);
+void animateBoss(ENEMY *);
+
+void drawBeemon(ENEMY *, int index);
+void drawBoss(ENEMY *, int index);
+
+void updateBeemon(ENEMY *, LEVEL level);
+void updateBoss(ENEMY *, LEVEL level);
 # 3 "main.c" 2
 # 1 "assets/gwl_STARTBG1.h" 1
 # 22 "assets/gwl_STARTBG1.h"
@@ -280,7 +322,7 @@ extern const unsigned short gwl_GAMEBG1Pal[256];
 # 7 "main.c" 2
 # 1 "assets/gwl_STAGE1.h" 1
 # 22 "assets/gwl_STAGE1.h"
-extern const unsigned short gwl_STAGE1Tiles[25696];
+extern const unsigned short gwl_STAGE1Tiles[16224];
 
 
 extern const unsigned short gwl_STAGE1Map[4096];
@@ -288,6 +330,16 @@ extern const unsigned short gwl_STAGE1Map[4096];
 
 extern const unsigned short gwl_STAGE1Pal[256];
 # 8 "main.c" 2
+# 1 "assets/gwl_BOSS.h" 1
+# 22 "assets/gwl_BOSS.h"
+extern const unsigned short gwl_BOSSTiles[3344];
+
+
+extern const unsigned short gwl_BOSSMap[2048];
+
+
+extern const unsigned short gwl_BOSSPal[256];
+# 9 "main.c" 2
 # 1 "assets/gwl_WINBG1.h" 1
 # 22 "assets/gwl_WINBG1.h"
 extern const unsigned short gwl_WINBG1Tiles[1216];
@@ -297,7 +349,7 @@ extern const unsigned short gwl_WINBG1Map[1024];
 
 
 extern const unsigned short gwl_WINBG1Pal[256];
-# 9 "main.c" 2
+# 10 "main.c" 2
 # 1 "assets/gwl_LOSEBG1.h" 1
 # 22 "assets/gwl_LOSEBG1.h"
 extern const unsigned short gwl_LOSEBG1Tiles[832];
@@ -307,14 +359,14 @@ extern const unsigned short gwl_LOSEBG1Map[1024];
 
 
 extern const unsigned short gwl_LOSEBG1Pal[256];
-# 10 "main.c" 2
+# 11 "main.c" 2
 # 1 "assets/gwl_SPRITES.h" 1
 # 21 "assets/gwl_SPRITES.h"
 extern const unsigned short gwl_SPRITESTiles[16384];
 
 
 extern const unsigned short gwl_SPRITESPal[256];
-# 11 "main.c" 2
+# 12 "main.c" 2
 
 
 
@@ -346,7 +398,7 @@ extern unsigned short vOff;
 
 
 int seed;
-
+# 66 "main.c"
 int main() {
 
     initialize();
@@ -419,6 +471,8 @@ void start() {
 }
 
 void goToRules() {
+    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((28)<<8) | (0<<7) | (0<<14);
+
     DMANow(3, gwl_GUIDEBG1Pal, ((unsigned short *)0x5000000), 512 / 2);
     DMANow(3, gwl_GUIDEBG1Tiles, &((charblock *)0x6000000)[0], 3552 / 2);
     DMANow(3, gwl_GUIDEBG1Map, &((screenblock *)0x6000000)[28], 2048 / 2);
@@ -433,11 +487,24 @@ void rules() {
 
 void goToGame() {
 
-    (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((28)<<8) | (1<<7) | (1<<14);
+    switch (stage) {
+    case STAGE1:
+        (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((28)<<8) | (1<<7) | (1<<14);
 
-    DMANow(3, gwl_STAGE1Pal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, gwl_STAGE1Tiles, &((charblock *)0x6000000)[0], 51392 / 2);
-    DMANow(3, gwl_STAGE1Map, &((screenblock *)0x6000000)[28], 8192 / 2);
+        DMANow(3, gwl_STAGE1Pal, ((unsigned short *)0x5000000), 512 / 2);
+        DMANow(3, gwl_STAGE1Tiles, &((charblock *)0x6000000)[0], 32448 / 2);
+        DMANow(3, gwl_STAGE1Map, &((screenblock *)0x6000000)[28], 8192 / 2);
+        break;
+
+
+    case BOSS:
+        (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((28)<<8) | (0<<7) | (1<<14);
+
+        DMANow(3, gwl_BOSSPal, ((unsigned short *)0x5000000), 512 / 2);
+        DMANow(3, gwl_BOSSTiles, &((charblock *)0x6000000)[0], 6688 / 2);
+        DMANow(3, gwl_BOSSMap, &((screenblock *)0x6000000)[28], 4096 / 2);
+    }
+
 
     state = GAME;
 }
@@ -449,7 +516,7 @@ void game() {
     if (player.health <= 0) {
         goToLose();
     }
-    if (player.worldCol >= 256 * 3) {
+    if (bossDefeated) {
         goToWin();
     }
 
@@ -463,6 +530,9 @@ void goToPause() {
     DMANow(3, gwl_PAUSEBGPal, ((unsigned short *)0x5000000), 512 / 2);
     DMANow(3, gwl_PAUSEBGTiles, &((charblock *)0x6000000)[0], 7296 / 2);
     DMANow(3, gwl_PAUSEBGMap, &((screenblock *)0x6000000)[28], 2048 / 2);
+
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000012) = 0;
     state = PAUSE;
 }
 
@@ -473,6 +543,9 @@ void pause() {
     if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))) {
         goToStart();
     }
+
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000012) = 0;
 
     hideSprites();
 
@@ -488,6 +561,10 @@ void goToWin() {
     DMANow(3, gwl_WINBG1Pal, ((unsigned short *)0x5000000), 512 / 2);
     DMANow(3, gwl_WINBG1Tiles, &((charblock *)0x6000000)[0], 2432 / 2);
     DMANow(3, gwl_WINBG1Map, &((screenblock *)0x6000000)[28], 2048 / 2);
+
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000012) = 0;
+
     state = WIN;
 }
 
@@ -495,6 +572,10 @@ void win() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToStart();
     }
+
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000012) = 0;
+
     hideSprites();
 
     waitForVBlank();
@@ -515,6 +596,8 @@ void lose() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToStart();
     }
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000012) = 0;
     hideSprites();
     waitForVBlank();
     DMANow(3, &shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);

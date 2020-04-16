@@ -2,13 +2,16 @@
 
 //logistical macros
 #define FPS 12
-#define GRAVITY 2
+#define GRAVITY 100
+#define JUMPPOWER 1700
+#define SHIFTUP(num) ((num) << 8)
+#define SHIFTDOWN(num) ((num) >> 8)
 #define IFRAMES 50
 
 //weapon constants
 #define PISTOL_MAX 9
 #define SHOTGUN_MAX 2
-#define MINIGUN_MAX 50
+#define MINIGUN_MAX 70
 #define PISTOL_FIRERATE 20
 #define SHOTGUN_FIRERATE 400
 #define MINIGUN_FIRERATE 10
@@ -16,17 +19,28 @@
 //STAGE SPECIFIC MACROS
 
 //stage 1
-#define ENEMYCOUNT_STAGE1 1
-#define LOOTCOUNT_STAGE1 1
+#define ENEMYCOUNT_STAGE1 3
+#define LOOTCOUNT_STAGE1 ((ENEMYCOUNT_STAGE1) + (1))
 #define STAGE1_MAPWIDTH 1024
 #define STAGE1_MAPHEIGHT 256
+#define STAGE1_SPAWNCOL 20
+#define STAGE1_SPAWNROW (SCREENHEIGHT / 2)
+
+//boss
+#define ENEMYCOUNT_BOSS 10
+#define LOOTCOUNT_BOSS 10
+#define BOSS_MAPWIDTH 512
+#define BOSS_MAPHEIGHT 256
+#define BOSS_SPAWNCOL 20
+#define BOSS_SPAWNROW 16
 
 //enums
-enum {PISTOL, SHOTGUN, MINIGUN}; // GUN TYPES
+enum {PISTOL=2, SHOTGUN=2*6, MINIGUN=5}; // GUN TYPES
 enum {BEEMON}; // ENEMY TYPES
-enum {GUNRIGHT, GUNLEFT, GUNJUMPR, GUNJUMPL, GUNIDLE};
-enum {ENEMYRIGHT=(GUNIDLE+1), ENEMYLEFT, ENEMYIDLE}; // ENEMY STATES
-enum {STAGE1, STAGE2, BOSS}; // STAGES
+enum {GUNRIGHT=1, GUNLEFT, GUNJUMPR, GUNJUMPL, GUNIDLE};
+enum {BEEMONRIGHT=1, BEEMONLEFT, BEEMONHITR, BEEMONHITL}; // ENEMY STATES
+enum {BOSSIDLE, BOSSATTACK}; // BOSS
+enum {STAGE1, BOSS}; // STAGES
 
 //structs
 typedef struct {
@@ -38,8 +52,7 @@ typedef struct {
     int height;
     int hspd;
     int vspd;
-    int vdel;
-    int jumping; // 1 for currently jumping/falling, 0 for not
+    int jumping;
     int curFrame;
     int numFrames;
     int state;
@@ -56,7 +69,17 @@ typedef struct {
 } PLAYER;
 
 typedef struct {
+    int enemies;
+    int pickups;
+    int playerSpawnCol;
+    int playerSpawnRow;
+    int levelHeight;
+    int levelWidth;
+} LEVEL;
+
+typedef struct {
     int timer;
+    int hitStun; //separate timer to track how long the enemy is stunned for after being hit
     int screenRow;
     int screenCol;
     int worldRow;
@@ -78,6 +101,16 @@ typedef struct {
 } ENEMY;
 
 typedef struct {
+    int screenRow;
+    int screenCol;
+    int worldRow;
+    int worldCol;
+    int width;
+    int height;
+    int dst;
+} DOOR;
+
+typedef struct {
     int worldRow;
     int worldCol;
     int screenRow;
@@ -93,6 +126,7 @@ typedef struct {
     int screenCol;
     int worldRow;
     int worldCol;
+    int bulletType;
     int width;
     int height;
     int active;
@@ -105,32 +139,34 @@ typedef struct {
 
 //  init functions
 void initGame();
-void initPlayer();
-void initEnemies();
-void initEnemy(ENEMY *);
+void initLevels();
+void initPlayer(LEVEL);
+void initHealthBar();
+void initEnemies(LEVEL, ENEMY enemies[], int enemySpawns[], int enemyTypes[]);
+void initEnemy(ENEMY *, LEVEL);
 void initBullets();
 void initBullet(BULLET *);
 void fire();
-void spawnEnemyLoot(ENEMY *);
+void dropLoot(ENEMY *, LEVEL, LOOTBOX pickups[]);
 void initLootBoxes();
-void initLootBox(LOOTBOX *);
 
 
 //  update functions
 void updateGame();
-void updatePlayer();
-void updateEnemies();
-void updateEnemy(ENEMY *);
+void updatePlayer(unsigned short collisionMap[], int levelHeight, int levelWidth);
+void updateEnemies(ENEMY enemies[], LEVEL);
+void updateEnemy(ENEMY *, LEVEL);
 void updateBullets();
 void updateBullet(BULLET *);
-void updateLootBox();
+void updateLootBox(LOOTBOX pickups[], LEVEL);
+void changeLevel();
 
 //  drawing functions
 void drawGame();
 void drawPlayer();
-void drawEnemies();
+void drawEnemies(LEVEL, ENEMY enemies[]);
 void drawBullets();
-void drawLootBox();
+void drawLootBox(LOOTBOX pickups[], LEVEL);
 
 
 //  animation functions
@@ -140,10 +176,30 @@ void animateEnemy(ENEMY *);
 
 //variables
 extern PLAYER player;
-extern BULLET pistolMag[PISTOL_MAX];
-extern BULLET shotgunMag[SHOTGUN_MAX];
-extern BULLET minigunMag[MINIGUN_MAX];
+extern BULLET bullets[MINIGUN_MAX];
 extern int playerHealth;
 extern int stage;
+extern int bossDefeated;
+
+
 extern ENEMY s1Enemies[];
 extern LOOTBOX s1Loot[];
+extern LEVEL stage1;
+extern int s1EnemySpawns[];
+extern DOOR stage1Exit;
+
+extern LEVEL boss;
+extern ENEMY bossEnemies[];
+extern LOOTBOX bossLoot[];
+
+
+//enemyAI.c stuff
+void animateBeemon(ENEMY *);
+void animateBoss(ENEMY *);
+
+void drawBeemon(ENEMY *, int index);
+void drawBoss(ENEMY *, int index);
+
+void updateBeemon(ENEMY *, LEVEL level);
+void updateBoss(ENEMY *, LEVEL level);
+
