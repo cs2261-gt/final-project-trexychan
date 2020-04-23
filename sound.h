@@ -10,3 +10,6 @@ void playSoundB(const signed char* sound, int length, int loops);
 void pauseSound();
 void unpauseSound();
 void stopSound();
+
+void setupInterrupts();
+void interruptHandler();

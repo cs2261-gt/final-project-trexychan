@@ -3,12 +3,15 @@
 # 1 "<command-line>"
 # 1 "game.c"
 # 1 "game.h" 1
-# 38 "game.h"
-enum {PISTOL=2, SHOTGUN=2*6, MINIGUN=5};
-enum {BEEMON};
+# 40 "game.h"
+enum {PISTOL=2, SHOTGUN=4, MINIGUN=5};
+enum {gun0, gun1, gun2};
+enum {BEEMON, HEADMAN, BEELLET, RATTANK, CRATE, TANKBULLET};
 enum {GUNRIGHT=1, GUNLEFT, GUNJUMPR, GUNJUMPL, GUNIDLE};
 enum {BEEMONRIGHT=1, BEEMONLEFT, BEEMONHITR, BEEMONHITL};
 enum {BOSSIDLE, BOSSATTACK};
+enum {TANKLEFT, TANKRIGHT, TANKATTACK, TANKIDLE};
+enum {CRATEFULL=1, CRATEDMG};
 enum {STAGE1, BOSS};
 
 
@@ -32,7 +35,10 @@ typedef struct {
     int fireTimer;
     int dash;
     int fireRate;
-    int health;
+    int pistolHealth;
+    int shotgunHealth;
+    int minigunHealth;
+    int currentHealth;
     int iFrameCounter;
     int gunType;
 } PLAYER;
@@ -100,7 +106,8 @@ typedef struct {
     int height;
     int active;
     int destroyed;
-    int spd;
+    int hspd;
+    int vspd;
     int state;
 } BULLET;
 
@@ -115,7 +122,7 @@ void initEnemies(LEVEL, ENEMY enemies[], int enemySpawns[], int enemyTypes[]);
 void initEnemy(ENEMY *, LEVEL);
 void initBullets();
 void initBullet(BULLET *);
-void fire();
+void fire(int src, ENEMY *);
 void dropLoot(ENEMY *, LEVEL, LOOTBOX pickups[]);
 void initLootBoxes();
 
@@ -136,6 +143,7 @@ void drawPlayer();
 void drawEnemies(LEVEL, ENEMY enemies[]);
 void drawBullets();
 void drawLootBox(LOOTBOX pickups[], LEVEL);
+void drawHealthBar();
 
 
 
@@ -145,7 +153,7 @@ void animateEnemy(ENEMY *);
 
 
 extern PLAYER player;
-extern BULLET bullets[70];
+extern BULLET bullets[];
 extern int playerHealth;
 extern int stage;
 extern int bossDefeated;
@@ -160,17 +168,33 @@ extern DOOR stage1Exit;
 extern LEVEL boss;
 extern ENEMY bossEnemies[];
 extern LOOTBOX bossLoot[];
+extern int bossEnemySpawns[];
 
 
 
 void animateBeemon(ENEMY *);
-void animateBoss(ENEMY *);
+void animateBeellet(ENEMY *);
+void animateHeadMan(ENEMY *);
+void animateRatTank(ENEMY *);
 
 void drawBeemon(ENEMY *, int index);
-void drawBoss(ENEMY *, int index);
+void drawBeellet(ENEMY *, int index);
+void drawHeadMan(ENEMY *, int index);
+void drawRatTank(ENEMY *, int index);
+void drawCrate(ENEMY *, int index);
 
 void updateBeemon(ENEMY *, LEVEL level);
-void updateBoss(ENEMY *, LEVEL level);
+void updateBeellet(ENEMY *, LEVEL level);
+void updateHeadMan(ENEMY *, LEVEL level);
+void updateRatTank(ENEMY *, LEVEL level);
+void updateCrate(ENEMY *, LEVEL level);
+
+void spawnBeellet(ENEMY enemies[], LEVEL level, ENEMY *boss);
+void ratTankAtk(ENEMY enemies[], LEVEL level);
+
+void clearAllMobs(ENEMY enemies[], LEVEL level);
+
+extern int headManFireRate;
 # 2 "game.c" 2
 # 1 "myLib.h" 1
 
@@ -280,36 +304,65 @@ typedef struct{
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
 # 3 "game.c" 2
+# 1 "sound.h" 1
+SOUND soundA;
+SOUND soundB;
+
+
+
+void setupSounds();
+void playSoundA(const signed char* sound, int length, int loops);
+void playSoundB(const signed char* sound, int length, int loops);
+
+void pauseSound();
+void unpauseSound();
+void stopSound();
+
+void setupInterrupts();
+void interruptHandler();
+# 4 "game.c" 2
+# 1 "sounds/chaos.h" 1
+# 20 "sounds/chaos.h"
+extern const unsigned char chaos[363744];
+# 5 "game.c" 2
+# 1 "sounds/panic.h" 1
+# 20 "sounds/panic.h"
+extern const unsigned char panic[693229];
+# 6 "game.c" 2
+# 1 "sounds/gunShot.h" 1
+# 20 "sounds/gunShot.h"
+extern const unsigned char gunShot[11008];
+# 7 "game.c" 2
 # 1 "assets/gwl_STARTBG1.h" 1
 # 22 "assets/gwl_STARTBG1.h"
-extern const unsigned short gwl_STARTBG1Tiles[2384];
+extern const unsigned short gwl_STARTBG1Tiles[2432];
 
 
 extern const unsigned short gwl_STARTBG1Map[1024];
 
 
 extern const unsigned short gwl_STARTBG1Pal[256];
-# 4 "game.c" 2
+# 8 "game.c" 2
 # 1 "assets/gwl_GUIDEBG1.h" 1
 # 22 "assets/gwl_GUIDEBG1.h"
-extern const unsigned short gwl_GUIDEBG1Tiles[1776];
+extern const unsigned short gwl_GUIDEBG1Tiles[1888];
 
 
 extern const unsigned short gwl_GUIDEBG1Map[1024];
 
 
 extern const unsigned short gwl_GUIDEBG1Pal[256];
-# 5 "game.c" 2
+# 9 "game.c" 2
 # 1 "assets/gwl_PAUSEBG.h" 1
 # 22 "assets/gwl_PAUSEBG.h"
-extern const unsigned short gwl_PAUSEBGTiles[3648];
+extern const unsigned short gwl_PAUSEBGTiles[6448];
 
 
 extern const unsigned short gwl_PAUSEBGMap[1024];
 
 
 extern const unsigned short gwl_PAUSEBGPal[256];
-# 6 "game.c" 2
+# 10 "game.c" 2
 # 1 "assets/gwl_GAMEBG1.h" 1
 # 22 "assets/gwl_GAMEBG1.h"
 extern const unsigned short gwl_GAMEBG1Tiles[896];
@@ -319,7 +372,7 @@ extern const unsigned short gwl_GAMEBG1Map[1024];
 
 
 extern const unsigned short gwl_GAMEBG1Pal[256];
-# 7 "game.c" 2
+# 11 "game.c" 2
 # 1 "assets/gwl_STAGE1.h" 1
 # 22 "assets/gwl_STAGE1.h"
 extern const unsigned short gwl_STAGE1Tiles[16224];
@@ -329,42 +382,42 @@ extern const unsigned short gwl_STAGE1Map[4096];
 
 
 extern const unsigned short gwl_STAGE1Pal[256];
-# 8 "game.c" 2
+# 12 "game.c" 2
 # 1 "assets/gwl_STAGE1CM.h" 1
 # 20 "assets/gwl_STAGE1CM.h"
 extern const unsigned short gwl_STAGE1CMBitmap[262144];
-# 9 "game.c" 2
+# 13 "game.c" 2
 # 1 "assets/gwl_BOSS.h" 1
 # 22 "assets/gwl_BOSS.h"
-extern const unsigned short gwl_BOSSTiles[3344];
+extern const unsigned short gwl_BOSSTiles[3888];
 
 
 extern const unsigned short gwl_BOSSMap[2048];
 
 
 extern const unsigned short gwl_BOSSPal[256];
-# 10 "game.c" 2
+# 14 "game.c" 2
 # 1 "assets/gwl_BOSSCM.h" 1
 # 20 "assets/gwl_BOSSCM.h"
 extern const unsigned short gwl_BOSSCMBitmap[131072];
-# 11 "game.c" 2
+# 15 "game.c" 2
 # 1 "assets/gwl_WINBG1.h" 1
 # 22 "assets/gwl_WINBG1.h"
-extern const unsigned short gwl_WINBG1Tiles[1216];
+extern const unsigned short gwl_WINBG1Tiles[7584];
 
 
 extern const unsigned short gwl_WINBG1Map[1024];
 
 
 extern const unsigned short gwl_WINBG1Pal[256];
-# 12 "game.c" 2
+# 16 "game.c" 2
 # 1 "assets/gwl_SPRITES.h" 1
 # 21 "assets/gwl_SPRITES.h"
 extern const unsigned short gwl_SPRITESTiles[16384];
 
 
 extern const unsigned short gwl_SPRITESPal[256];
-# 13 "game.c" 2
+# 17 "game.c" 2
 
 int stage;
 int bossDefeated;
@@ -375,20 +428,22 @@ SOUND soundB;
 
 
 PLAYER player;
-BULLET bullets[70];
+BULLET bullets[30];
+int gunslot;
+int activeBullets;
 
 LEVEL stage1;
-ENEMY s1Enemies[3];
-LOOTBOX s1Loot[((3) + (1))];
-int s1EnemySpawns[] = {200, 120, 480, 120, 616, 80};
-int s1EnemyTypes[] = {BEEMON, BEEMON, BEEMON};
+ENEMY s1Enemies[5];
+LOOTBOX s1Loot[5];
+int s1EnemySpawns[] = {200, 120, 480, 120, 616, 80, 112, 88, 592, 160};
+int s1EnemyTypes[] = {BEEMON, BEEMON, BEEMON, CRATE, CRATE};
 DOOR stage1Exit;
 
 LEVEL boss;
-ENEMY bossEnemies[10];
-LOOTBOX bossLoot[10];
-int bossEnemySpawns[] = {400, 50};
-int bossEnemyTypes[] = {BOSS};
+ENEMY bossEnemies[13];
+LOOTBOX bossLoot[13];
+int bossEnemySpawns[] = {440, 50, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 176, 88, 200, 88, 240, 64};
+int bossEnemyTypes[] = {HEADMAN, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, RATTANK, CRATE, CRATE};
 
 unsigned short hOff;
 unsigned short vOff;
@@ -398,8 +453,12 @@ int screenBlock;
 
 void initGame() {
     stage = STAGE1;
+    bossDefeated = 0;
+    activeBullets = 0;
+    playSoundA(chaos, 363744, 1);
     screenBlock = 28;
     playerHOff = 0;
+    gunslot = 0;
 
     (*(unsigned short *)0x4000000) = 0 | (1<<8) | (1<<12);
 
@@ -415,10 +474,10 @@ void initGame() {
 
 void initLevels() {
 
-    stage1.enemies = 3;
-    stage1.pickups = ((3) + (1));
+    stage1.enemies = 5;
+    stage1.pickups = 5;
     stage1.playerSpawnCol = 20;
-    stage1.playerSpawnRow = (160 / 2);
+    stage1.playerSpawnRow = ((160) / (2));
     stage1.levelHeight = 256;
     stage1.levelWidth = 1024;
 
@@ -431,8 +490,8 @@ void initLevels() {
 
     boss.levelHeight = 256;
     boss.levelWidth = 512;
-    boss.pickups = 10;
-    boss.enemies = 10;
+    boss.pickups = 13;
+    boss.enemies = 13;
     boss.playerSpawnCol = 20;
     boss.playerSpawnRow = 16;
 }
@@ -444,7 +503,10 @@ void initPlayer(LEVEL level) {
     player.height = 16;
     player.gunType = PISTOL;
     player.fireRate = 20;
-    player.health = 9;
+    player.pistolHealth = 9;
+    player.shotgunHealth = 2;
+    player.minigunHealth = 50;
+    player.currentHealth = player.pistolHealth;
     player.numFrames = 4;
     player.hspd = 2;
     player.dash = 0;
@@ -460,7 +522,7 @@ void initPlayer(LEVEL level) {
 }
 
 void initBullets() {
-    for (int i = 0; i < 70; i++) {
+    for (int i = 0; i < 30; i++) {
         initBullet(&bullets[i]);
     }
 }
@@ -496,11 +558,11 @@ void initEnemy(ENEMY *e, LEVEL level) {
         e->timer = 0;
         e->ammoDrop = 3;
     }
-    if (e->enemyType == BOSS) {
+    if (e->enemyType == HEADMAN) {
         e->alive = 1;
         e->height = 64;
         e->width = 64;
-        e->health = 4;
+        e->health = 40;
         e->numFrames = 4;
         e->curFrame = 0;
         e->state = BOSSIDLE;
@@ -509,16 +571,49 @@ void initEnemy(ENEMY *e, LEVEL level) {
         e->damage = 1;
         e->timer = 0;
     }
+    if (e->enemyType == BEELLET) {
+        e->alive = 0;
+        e->height = 16;
+        e->width = 16;
+        e->health = 1;
+        e->numFrames = 4;
+        e->curFrame = 0;
+        e->frameCounter = 12;
+        e->damage = 1;
+        e->timer = 0;
+        e->ammoDrop = 2;
+    }
+    if (e->enemyType == RATTANK) {
+        e->alive = 1;
+        e->height = 16;
+        e->width = 32;
+        e->health = 6;
+        e->numFrames = 3;
+        e->curFrame = 0;
+        e->frameCounter = 12;
+        e->damage = 1;
+        e->timer = 0;
+        e->ammoDrop = 10;
+        e->state = TANKIDLE;
+    }
+    if (e->enemyType == CRATE) {
+        e->alive = 1;
+        e->height = 16;
+        e->width = 16;
+        e->state = CRATEFULL;
+        e->ammoDrop = 5;
+        e->health = 2;
+    }
 }
 
 void initLootBoxes() {
 
-    for (int i = 0; i < ((3) + (1)); i++) {
+    for (int i = 0; i < stage1.pickups; i++) {
         s1Loot[i].active = 0;
         s1Loot[i].height = 8;
         s1Loot[i].width = 8;
     }
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < boss.pickups; i++) {
         bossLoot[i].active = 0;
         bossLoot[i].height = 8;
         bossLoot[i].width = 8;
@@ -534,6 +629,7 @@ void dropLoot(ENEMY *e, LEVEL level, LOOTBOX pickups[]) {
             pickups[i].worldCol = e->worldCol;
             pickups[i].worldRow = e->worldRow;
             pickups[i].active = 1;
+            break;
         }
     }
 
@@ -552,6 +648,7 @@ void updateGame() {
             updatePlayer(gwl_BOSSCMBitmap, boss.levelHeight, boss.levelWidth);
             updateBullets();
             updateEnemies(bossEnemies, boss);
+            updateLootBox(bossLoot, boss);
             break;
     }
 
@@ -565,10 +662,10 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
             screenBlock++;
             hOff -= 256;
             (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((screenBlock)<<8) | (1<<7) | (1<<14);
-        }
-
-        if (playerHOff > 512) {
-            playerHOff -= 512;
+        } else if (hOff <= 0 && screenBlock > 28) {
+            screenBlock--;
+            hOff += 256;
+            (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((screenBlock)<<8) | (1<<7) | (1<<14);
         }
     }
 
@@ -592,7 +689,8 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
     player.vspd += 100;
 
     if (((player.worldRow) >> 8) > MAPHEIGHT - 20) {
-        player.health = 0;
+        player.pistolHealth = 0;
+        player.shotgunHealth = 0;
     }
 
     if (((player.worldRow + player.vspd) >> 8) <= MAPHEIGHT - player.height
@@ -616,13 +714,14 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
         player.jumping = 0;
         player.vspd = 0;
     }
-
-    if ((!(~(oldButtons)&((1<<6))) && (~buttons & ((1<<6)))) && !(player.jumping)) {
+    if ((!(~(oldButtons)&((1<<6))) && (~buttons & ((1<<6)))) && !(player.jumping) && player.gunType != MINIGUN) {
         player.vspd -= 1700;
         player.jumping = 1;
 
     }
-    if ((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))) {
+
+
+    if ((~((*(volatile unsigned short *)0x04000130)) & ((1<<5))) && !player.dash) {
         if (player.worldCol - player.hspd >= (screenBlock - 28) * 256
         && collisionMap[((((player.worldRow) >> 8))*(MAPWIDTH)+(player.worldCol - player.hspd))]
         && collisionMap[((((player.worldRow + player.height) >> 8))*(MAPWIDTH)+(player.worldCol - player.hspd))]) {
@@ -630,11 +729,11 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
             player.worldCol -= player.hspd;
         }
 
-        if (hOff - player.hspd >= 0 && player.screenCol < 240 / 3) {
+        if (hOff > 0 && player.screenCol < 240 / 2) {
             hOff -= player.hspd;
             playerHOff -= player.hspd;
         }
-    } else if ((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))) {
+    } else if ((~((*(volatile unsigned short *)0x04000130)) & ((1<<4))) && !player.dash) {
         if ((player.worldCol + player.width) < (MAPWIDTH - player.width)
         && collisionMap[((((player.worldRow) >> 8))*(MAPWIDTH)+(player.worldCol + player.width + player.hspd - 1))]
         && collisionMap[((((player.worldRow + player.height) >> 8))*(MAPWIDTH)+(player.worldCol + player.width + player.hspd - 1))]) {
@@ -642,35 +741,107 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
             player.worldCol += player.hspd;
 
 
-            if (hOff < (MAPWIDTH - 240 - 1) && player.screenCol > 240 / 2 && screenBlock < 31) {
+            if (hOff < (MAPWIDTH - 240 - 1) && player.screenCol > 240 / 2) {
                 hOff += player.hspd;
                 playerHOff += player.hspd;
             }
         }
-
     }
 
 
 
-    if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1)))) && player.fireTimer > player.fireRate && player.health > 0) {
+    if (((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1)))) || (~((*(volatile unsigned short *)0x04000130)) & ((1<<1)))) && player.fireTimer > player.fireRate && player.currentHealth > 0) {
         player.fireTimer = 0;
-        player.health--;
-        fire();
+        switch (player.gunType)
+        {
+        case PISTOL:
+            player.pistolHealth--;
+            break;
+        case SHOTGUN:
+            player.shotgunHealth--;
+            break;
+        case MINIGUN:
+            player.minigunHealth--;
+            break;
+        }
+        fire(1, 0);
+        playSoundB(gunShot, 11008, 0);
     }
-    if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && !player.dash) {
-        player.hspd = player.hspd * 4;
+    if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && !player.dash && player.gunType == PISTOL) {
+        if (player.jumping) {
+            player.vspd = 0;
+        }
+        player.hspd = player.hspd * 2;
         player.dashTime = 0;
         player.dash = 1;
-    } else if (player.dashTime >= 10 && player.dash) {
-        player.hspd = 2;
+    } else if (player.dashTime >= 10 && player.dash && player.gunType == PISTOL) {
+        player.hspd = player.hspd / 2;
         player.dashTime = 0;
         player.dash = 0;
     }
 
+
+    if ((!(~(oldButtons)&((1<<7))) && (~buttons & ((1<<7)))) || player.currentHealth <= 0) {
+        gunslot++;
+        if (gunslot % 3 == 0) {
+            player.gunType = PISTOL;
+            player.fireRate = 20;
+            player.hspd = 2;
+            player.currentHealth = player.pistolHealth;
+        }
+        if (gunslot % 3 == 1) {
+            player.gunType = SHOTGUN;
+            player.fireRate = 50;
+            player.hspd = 2;
+            player.currentHealth = player.shotgunHealth;
+        }
+        if (gunslot % 3 == 2) {
+            player.gunType = MINIGUN;
+            player.fireRate = 2;
+            player.hspd = 1;
+            player.currentHealth = player.minigunHealth;
+        }
+    }
+
     if (player.dash) {
+        if (player.state == GUNLEFT) {
+            if (player.worldCol - player.hspd >= (screenBlock - 28) * 256
+            && collisionMap[((((player.worldRow) >> 8))*(MAPWIDTH)+(player.worldCol - player.hspd))]
+            && collisionMap[((((player.worldRow + player.height) >> 8))*(MAPWIDTH)+(player.worldCol - player.hspd))]) {
+                player.worldCol -= player.hspd;
+            }
+            if (hOff > 0 && player.screenCol < 240 / 2) {
+                hOff -= player.hspd;
+                playerHOff -= player.hspd;
+            }
+        }
+        if (player.state == GUNRIGHT) {
+            if ((player.worldCol + player.width) < (MAPWIDTH - player.width)
+            && collisionMap[((((player.worldRow) >> 8))*(MAPWIDTH)+(player.worldCol + player.width + player.hspd - 1))]
+            && collisionMap[((((player.worldRow + player.height) >> 8))*(MAPWIDTH)+(player.worldCol + player.width + player.hspd - 1))]) {
+                player.worldCol += player.hspd;
+
+                if (hOff < (MAPWIDTH - 240 - 1) && player.screenCol > 240 / 2) {
+                    hOff += player.hspd;
+                    playerHOff += player.hspd;
+                }
+            }
+        }
         player.dashTime++;
+        player.vspd = 0;
     }
     player.fireTimer++;
+
+    switch (player.gunType)
+    {
+    case PISTOL:
+        player.currentHealth = player.pistolHealth;
+        break;
+
+    case SHOTGUN:
+        player.currentHealth = player.shotgunHealth;
+        break;
+    }
 
 
     player.screenRow = ((player.worldRow) >> 8) - vOff;
@@ -680,7 +851,7 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
 }
 
 void updateBullets() {
-    for (int i = 0; i < 70; i++) {
+    for (int i = 0; i < 30; i++) {
         if (bullets[i].active) {
             updateBullet(&bullets[i]);
         }
@@ -688,21 +859,25 @@ void updateBullets() {
 }
 
 void updateBullet(BULLET *b) {
-    if (b->state == GUNRIGHT) {
-        if (b->screenCol + b->width + b->spd > 240) {
-            b->active = 0;
-        }
-    }
-    if (b->state == GUNLEFT) {
-        if (b->worldCol + b->spd < 0) {
-            b->active = 0;
-        }
-    }
 
-    b->worldCol += b->spd;
+    b->worldCol += b->hspd;
+    b->worldRow += b->vspd;
 
     b->screenCol = b->worldCol - playerHOff;
     b->screenRow = b->worldRow - vOff;
+
+    if (b->state == GUNRIGHT) {
+        if (b->screenCol > 240) {
+            b->active = 0;
+            activeBullets--;
+        }
+    }
+    if (b->state == GUNLEFT) {
+        if (b->screenCol < 0) {
+            b->active = 0;
+            activeBullets--;
+        }
+    }
 
 }
 
@@ -721,14 +896,29 @@ void updateEnemy(ENEMY *e, LEVEL level) {
         animateBeemon(e);
         break;
 
-    case BOSS:
-        updateBoss(e, level);
-        animateBoss(e);
+    case HEADMAN:
+        updateHeadMan(e, level);
+        animateHeadMan(e);
+        break;
+
+    case BEELLET:
+        updateBeellet(e, level);
+        animateBeellet(e);
+        break;
+
+    case RATTANK:
+        updateRatTank(e, level);
+        animateRatTank(e);
+        break;
+
+    case CRATE:
+        updateCrate(e, level);
         break;
     }
 
 
-
+    e->screenCol = e->worldCol - playerHOff;
+    e->screenRow = e->worldRow - vOff;
 }
 
 void updateLootBox(LOOTBOX pickups[], LEVEL level) {
@@ -736,7 +926,15 @@ void updateLootBox(LOOTBOX pickups[], LEVEL level) {
         if (pickups[i].active) {
             if (collision(player.worldCol, ((player.worldRow) >> 8), player.width, player.height, pickups[i].worldCol, pickups[i].worldRow, pickups[i].width, pickups[i].height)) {
                 pickups[i].active = 0;
-                player.health += pickups[i].ammocount;
+
+                player.pistolHealth += pickups[i].ammocount;
+                player.shotgunHealth += pickups[i].ammocount;
+                if (player.pistolHealth > 9) {
+                    player.pistolHealth = 9;
+                }
+                if (player.shotgunHealth > 2) {
+                    player.shotgunHealth = 2;
+                }
             }
         }
 
@@ -785,8 +983,16 @@ void animateEnemy(ENEMY *e) {
         animateBeemon(e);
         break;
 
-    case BOSS:
-        animateBoss(e);
+    case HEADMAN:
+        animateHeadMan(e);
+        break;
+
+    case BEELLET:
+        animateBeellet(e);
+        break;
+
+    case RATTANK:
+        animateRatTank(e);
         break;
     }
 
@@ -805,7 +1011,10 @@ void drawGame() {
             drawBullets();
             drawEnemies(boss, bossEnemies);
             drawLootBox(bossLoot, boss);
+            break;
     }
+
+    drawHealthBar();
 
     waitForVBlank();
 
@@ -816,44 +1025,135 @@ void drawGame() {
 }
 
 void drawPlayer() {
-    shadowOAM[0].attr0 = (0xFF & player.screenRow) | (0<<14);
-    shadowOAM[0].attr1 = (0x1FF & player.screenCol) | (1<<14);
-    shadowOAM[0].attr2 = ((player.curFrame * 2)*32+(player.state * 2));
+    switch (player.gunType) {
+        case PISTOL:
+            shadowOAM[0].attr0 = (0xFF & player.screenRow) | (0<<14);
+            shadowOAM[0].attr1 = (0x1FF & player.screenCol) | (1<<14);
+            shadowOAM[0].attr2 = ((player.curFrame * 2)*32+(player.state * 2));
+            break;
+
+        case SHOTGUN:
+            shadowOAM[0].attr0 = (0xFF & player.screenRow) | (1<<14);
+            shadowOAM[0].attr1 = (0x1FF & player.screenCol) | (2<<14);
+            shadowOAM[0].attr2 = (((player.curFrame + 12) * 2)*32+((player.state - 1) * 4));
+            break;
+
+        case MINIGUN:
+            shadowOAM[0].attr0 = (0xFF & (player.screenRow - player.height)) | (0<<14);
+            shadowOAM[0].attr1 = (0x1FF & player.screenCol) | (2<<14);
+            shadowOAM[0].attr2 = (((player.curFrame + 4) * 4)*32+((player.state + 1) * 4));
+            break;
+    }
 }
 
-void fire() {
-    for (int i = 0; i < 70; i++) {
-        if (!(bullets[i].active)) {
-            if (player.state == GUNRIGHT || player.state == GUNJUMPR) {
-                bullets[i].worldCol = player.worldCol + player.width - 1;
-                bullets[i].worldRow = ((player.worldRow) >> 8);
-                bullets[i].active = 1;
-                bullets[i].bulletType = player.gunType;
-                bullets[i].state = GUNRIGHT;
-                bullets[i].spd = 4;
+void fire(int src, ENEMY *e) {
+    if (src == 1) {
+        int shotgunPelletsFired = 0;
+        switch (player.gunType) {
+            case PISTOL:
+                for (int i = 0; i < 30; i++) {
+                    if (!(bullets[i].active)) {
+                        if (player.state == GUNRIGHT) {
+                            bullets[i].worldCol = player.worldCol + player.width - 1;;
+                            bullets[i].state = GUNRIGHT;
+                            bullets[i].hspd = 4;
+                        } else if (player.state == GUNLEFT) {
+                            bullets[i].worldCol = player.worldCol + 1;
+                            bullets[i].state = GUNLEFT;
+                            bullets[i].hspd = -4;
+
+                        }
+                        bullets[i].active = 1;
+                        bullets[i].worldRow = ((player.worldRow) >> 8);
+                        bullets[i].bulletType = player.gunType;
+                        bullets[i].vspd = 0;
+                        activeBullets++;
+                        break;
+                    }
+                }
                 break;
-            }
-            if (player.state == GUNLEFT || player.state == GUNJUMPL) {
-                bullets[i].worldCol = player.worldCol + 1;
-                bullets[i].worldRow = ((player.worldRow) >> 8);
+
+            case SHOTGUN:
+                for (int i = 0; i < 30; i++) {
+                    if (!(bullets[i].active) && shotgunPelletsFired < 3) {
+                        activeBullets++;
+                        shotgunPelletsFired++;
+                        if (player.state == GUNRIGHT) {
+                            bullets[i].worldCol = player.worldCol + player.width - 1;;
+                            bullets[i].state = GUNRIGHT;
+                            bullets[i].hspd = 4;
+                        } else if (player.state == GUNLEFT) {
+                            bullets[i].worldCol = player.worldCol + 1;
+                            bullets[i].state = GUNLEFT;
+                            bullets[i].hspd = -4;
+
+                        }
+                        bullets[i].active = 1;
+                        bullets[i].worldRow = ((player.worldRow) >> 8);
+                        bullets[i].bulletType = player.gunType;
+                        bullets[i].vspd = shotgunPelletsFired - (3 - 1);
+                    }
+                }
+                break;
+
+            case MINIGUN:
+                for (int i = 0; i < 30; i++) {
+                    if (!(bullets[i].active)) {
+                        if (player.state == GUNRIGHT) {
+                            bullets[i].worldCol = player.worldCol + player.width - 1;;
+                            bullets[i].state = GUNRIGHT;
+                            bullets[i].hspd = 4;
+                        } else if (player.state == GUNLEFT) {
+                            bullets[i].worldCol = player.worldCol + 1;
+                            bullets[i].state = GUNLEFT;
+                            bullets[i].hspd = -4;
+
+                        }
+                        bullets[i].active = 1;
+                        bullets[i].worldRow = ((player.worldRow) >> 8);
+                        bullets[i].bulletType = player.gunType;
+                        bullets[i].vspd = 0;
+                        activeBullets++;
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+    if (src == RATTANK) {
+        for (int i = 0; i < 30; i++) {
+            if (!(bullets[i].active)) {
+                if (e->state == TANKRIGHT) {
+                    bullets[i].worldCol = e->worldCol + e->width;
+                    bullets[i].state = GUNRIGHT;
+                    bullets[i].hspd = 3;
+                } else if (player.state == TANKLEFT) {
+                    bullets[i].worldCol = e->worldCol;
+                    bullets[i].state = GUNLEFT;
+                    bullets[i].hspd = -3;
+
+                }
                 bullets[i].active = 1;
-                bullets[i].state = GUNLEFT;
-                bullets[i].bulletType = player.gunType;
-                bullets[i].spd = -4;
+                bullets[i].worldRow = e->worldRow;
+                bullets[i].bulletType = TANKBULLET;
+                bullets[i].vspd = 0;
+                activeBullets++;
                 break;
             }
         }
     }
+
+
 }
 
 void drawBullets() {
-    for (int i = 0; i < 70; i++) {
-        if (bullets[i].active) {
-            shadowOAM[i + 1].attr0 = (0xFF & bullets[i].screenRow) | (0<<14);
-            shadowOAM[i + 1].attr1 = (0x1FF & bullets[i].screenCol) | (0<<14);
-            shadowOAM[i + 1].attr2 = ((6)*32+(0));
+    for (int i = 0; i < 30; i++) {
+        if (bullets[i].active && bullets[i].screenCol > 0 && bullets[i].screenCol < 240) {
+            shadowOAM[i + player.pistolHealth + 1].attr0 = (0xFF & bullets[i].screenRow) | (0<<14);
+            shadowOAM[i + player.pistolHealth + 1].attr1 = (0x1FF & bullets[i].screenCol) | (0<<14);
+            shadowOAM[i + player.pistolHealth + 1].attr2 = ((6)*32+(0));
         } else {
-            shadowOAM[i + 1].attr0 |= (2<<8);
+            shadowOAM[i + player.pistolHealth + 1].attr0 |= (2<<8);
         }
     }
 }
@@ -867,12 +1167,24 @@ void drawEnemies(LEVEL level, ENEMY enemies[]) {
                 drawBeemon(&enemies[i], i);
                 break;
 
-            case BOSS:
-                drawBoss(&enemies[i], i);
+            case HEADMAN:
+                drawHeadMan(&enemies[i], i);
+                break;
+
+            case BEELLET:
+                drawBeellet(&enemies[i], i);
+                break;
+
+            case RATTANK:
+                drawRatTank(&enemies[i], i);
+                break;
+
+            case CRATE:
+                drawCrate(&enemies[i], i);
                 break;
             }
         } else {
-            shadowOAM[i + 70 + 1].attr0 |= (2<<8);
+            shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 |= (2<<8);
         }
     }
 }
@@ -880,11 +1192,11 @@ void drawEnemies(LEVEL level, ENEMY enemies[]) {
 void drawLootBox(LOOTBOX pickups[], LEVEL level) {
     for (int i = 0; i < level.pickups; i++) {
         if (pickups[i].active) {
-            shadowOAM[i + 70 + level.enemies + 1].attr0 = (0xFF & pickups[i].screenRow) | (0<<14);
-            shadowOAM[i + 70 + level.enemies + 1].attr1 = (0x1FF & pickups[i].screenCol) | (1<<14);
-            shadowOAM[i + 70 + level.enemies + 1].attr2 = ((4)*32+(0));
+            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr0 = (0xFF & pickups[i].screenRow) | (0<<14);
+            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr1 = (0x1FF & pickups[i].screenCol) | (1<<14);
+            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr2 = ((4)*32+(0));
         } else {
-            shadowOAM[i + 70 + level.enemies + 1].attr0 |= (2<<8);
+            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr0 |= (2<<8);
         }
     }
 
@@ -893,10 +1205,14 @@ void drawLootBox(LOOTBOX pickups[], LEVEL level) {
 void changeLevel() {
     switch (stage) {
     case BOSS:
+
         (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((28)<<8) | (0<<7) | (1<<14);
 
+        stopSound();
+        playSoundA(panic, 693229, 1);
+
         DMANow(3, gwl_BOSSPal, ((unsigned short *)0x5000000), 512 / 2);
-        DMANow(3, gwl_BOSSTiles, &((charblock *)0x6000000)[0], 6688 / 2);
+        DMANow(3, gwl_BOSSTiles, &((charblock *)0x6000000)[0], 7776 / 2);
         DMANow(3, gwl_BOSSMap, &((screenblock *)0x6000000)[28], 4096 / 2);
 
         initPlayer(boss);
@@ -906,6 +1222,47 @@ void changeLevel() {
         playerHOff = 0;
         vOff = 0;
         screenBlock = 28;
+        break;
+    }
+}
+
+void drawHealthBar() {
+    switch (player.gunType)
+    {
+    case PISTOL:
+        for (int i = 0; i < player.pistolHealth; i++) {
+            if (i < player.pistolHealth) {
+                shadowOAM[i + 1].attr0 = (0xFF & 0) | (0<<14);
+                shadowOAM[i + 1].attr1 = (0x1FF & (i * 8)) | (0<<14);
+                shadowOAM[i + 1].attr2 = ((6)*32+(1));
+            } else {
+                shadowOAM[i + 1].attr0 |= (2<<8);
+            }
+        }
+        break;
+
+    case SHOTGUN:
+        for (int i = 0; i < player.pistolHealth; i++) {
+            if (i < player.shotgunHealth) {
+                shadowOAM[i + 1].attr0 = (0xFF & 0) | (0<<14);
+                shadowOAM[i + 1].attr1 = (0x1FF & (i * 8)) | (0<<14);
+                shadowOAM[i + 1].attr2 = ((6)*32+(1));
+            } else {
+                shadowOAM[i + 1].attr0 |= (2<<8);
+            }
+        }
+        break;
+
+    case MINIGUN:
+        for (int i = 0; i < player.pistolHealth; i++) {
+            if (i < player.shotgunHealth) {
+                shadowOAM[i + 1].attr0 = (0xFF & 0) | (0<<14);
+                shadowOAM[i + 1].attr1 = (0x1FF & (i * 8)) | (0<<14);
+                shadowOAM[i + 1].attr2 = ((6)*32+(1));
+            } else {
+                shadowOAM[i + 1].attr0 |= (2<<8);
+            }
+        }
         break;
     }
 }

@@ -5,11 +5,11 @@
 //
 //	gwl_STARTBG1, 256x256@4, 
 //	+ palette 256 entries, not compressed
-//	+ 149 tiles (t|f|p reduced) not compressed
+//	+ 152 tiles (t|f|p reduced) not compressed
 //	+ regular map (in SBBs), not compressed, 32x32 
-//	Total size: 512 + 4768 + 2048 = 7328
+//	Total size: 512 + 4864 + 2048 = 7424
 //
-//	Time-stamp: 2020-04-06, 18:15:00
+//	Time-stamp: 2020-04-20, 16:48:59
 //	Exported by Cearn's GBA Image Transmogrifier, v0.8.3
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -18,8 +18,8 @@
 #ifndef GRIT_GWL_STARTBG1_H
 #define GRIT_GWL_STARTBG1_H
 
-#define gwl_STARTBG1TilesLen 4768
-extern const unsigned short gwl_STARTBG1Tiles[2384];
+#define gwl_STARTBG1TilesLen 4864
+extern const unsigned short gwl_STARTBG1Tiles[2432];
 
 #define gwl_STARTBG1MapLen 2048
 extern const unsigned short gwl_STARTBG1Map[1024];
