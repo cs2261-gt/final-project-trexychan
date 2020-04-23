@@ -123,6 +123,9 @@ void playSoundB(const signed char* sound, int length, int loops);
 void pauseSound();
 void unpauseSound();
 void stopSound();
+
+void setupInterrupts();
+void interruptHandler();
 # 3 "sound.c" 2
 
 void setupSounds() {
@@ -139,4 +142,128 @@ void setupSounds() {
                     (1<<15);
 
     *(u16*)0x04000080 = 0;
+}
+
+void playSoundA(const signed char *sound, int length, int loops) {
+    dma[1].cnt = 0;
+
+    int ticks = (16777216) / 11025;
+
+    DMANow(1, sound, (u16*)0x040000A0, (2 << 21) | (3 << 28) | (1 << 25) | (1 << 26));
+
+    *(volatile unsigned short*)0x4000102 = 0;
+
+    *(volatile unsigned short*)0x4000100 = -ticks;
+    *(volatile unsigned short*)0x4000102 = (1<<7);
+
+    soundA.data = sound;
+    soundA.frequency = 11025;
+    soundA.isPlaying = 1;
+    soundA.duration = ((59.727) * length) / 11025;
+    soundA.loops = loops;
+    soundA.vBlankCount = 0;
+    soundA.length = length;
+}
+
+void playSoundB( const signed char* sound, int length, int loops) {
+
+    dma[2].cnt = 0;
+
+    int ticks = (16777216) / 11025;
+
+    DMANow(2, sound, (u16*)0x040000A4, (2 << 21) | (3 << 28) | (1 << 25) | (1 << 26));
+
+    *(volatile unsigned short*)0x4000106 = 0;
+
+    *(volatile unsigned short*)0x4000104 = -ticks;
+    *(volatile unsigned short*)0x4000106 = (1<<7);
+
+
+    soundB.data = sound;
+    soundB.frequency = 11025;
+    soundB.isPlaying = 1;
+    soundB.duration = ((59.727) * length) / 11025;
+    soundB.loops = loops;
+    soundB.vBlankCount = 0;
+    soundB.length = length;
+
+
+}
+
+void setupInterrupts()
+{
+    *(unsigned short*)0x4000208 = 0;
+
+
+    void interrupetHandler(void);
+    *(unsigned int*)0x3007FFC = interruptHandler;
+
+
+
+    *(unsigned short*)0x4000200 |= 1 << 0;
+    *(unsigned short*)0x4000004 |= 1 << 3;
+    *(unsigned short*)0x4000208 = 1;
+}
+
+void interruptHandler() {
+
+    *(unsigned short*)0x4000208 = 0;
+
+    if(*(volatile unsigned short*)0x4000202 & 1 << 0) {
+        if (soundA.isPlaying) {
+            soundA.vBlankCount++;
+            if (soundA.vBlankCount > soundA.duration) {
+                if (soundA.loops) {
+                    playSoundA(soundA.data, soundA.length, soundA.loops);
+                } else {
+                    soundA.isPlaying = 0;
+                    dma[1].cnt = 0;
+                    *(volatile unsigned short*)0x4000102 = (0<<7);
+                }
+            }
+        }
+
+
+
+        if (soundB.isPlaying) {
+            soundB.vBlankCount++;
+            if (soundB.vBlankCount > soundB.duration) {
+                if (soundB.loops) {
+                    playSoundB(soundB.data, soundB.length, soundB.loops);
+                } else {
+                    soundB.isPlaying = 0;
+                    dma[2].cnt = 0;
+                    *(volatile unsigned short*)0x4000106 = (0<<7);
+                }
+            }
+        }
+
+
+        *(volatile unsigned short*)0x4000202 = 1 << 0;
+    }
+
+    *(unsigned short*)0x4000208 = 1;
+}
+
+void pauseSound() {
+    soundA.isPlaying = 0;
+    *(volatile unsigned short*)0x4000102 = (0<<7);
+    soundB.isPlaying = 0;
+    *(volatile unsigned short*)0x4000106 = (0<<7);
+}
+
+void unpauseSound() {
+    soundA.isPlaying = 1;
+    *(volatile unsigned short*)0x4000102 = (1<<7);
+    soundB.isPlaying = 1;
+    *(volatile unsigned short*)0x4000106 = (1<<7);
+}
+
+void stopSound() {
+    dma[1].cnt = 0;
+    *(volatile unsigned short*)0x4000102 = (0<<7);
+    soundA.isPlaying = 0;
+    dma[2].cnt = 0;
+    *(volatile unsigned short*)0x4000106 = (0<<7);
+    soundB.isPlaying = 0;
 }

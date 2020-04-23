@@ -32,7 +32,7 @@ goToStart:
 	ldr	r1, .L4+4
 	mov	lr, pc
 	bx	r4
-	mov	r3, #2384
+	mov	r3, #2432
 	mov	r2, #100663296
 	mov	r0, #3
 	ldr	r1, .L4+8
@@ -73,23 +73,36 @@ initialize:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	mov	r2, #7168
+	mov	r3, #7168
 	mov	r4, #67108864
-	ldr	r5, .L8
-	strh	r2, [r4, #8]	@ movhi
+	mov	r1, #0
+	strh	r3, [r4, #8]	@ movhi
+	ldr	r3, .L8
+	ldr	r0, .L8+4
+	ldrh	ip, [r3, #48]
+	ldr	r2, .L8+8
+	ldr	r3, .L8+12
+	strh	ip, [r0]	@ movhi
+	strh	r1, [r2]	@ movhi
+	mov	lr, pc
+	bx	r3
+	ldr	r3, .L8+16
+	mov	lr, pc
+	bx	r3
+	ldr	r5, .L8+20
 	mov	r3, #256
 	mov	r0, #3
-	ldr	r2, .L8+4
-	ldr	r1, .L8+8
+	ldr	r2, .L8+24
+	ldr	r1, .L8+28
 	mov	lr, pc
 	bx	r5
 	mov	r3, #16384
 	mov	r0, #3
-	ldr	r2, .L8+12
-	ldr	r1, .L8+16
+	ldr	r2, .L8+32
+	ldr	r1, .L8+36
 	mov	lr, pc
 	bx	r5
-	ldr	r3, .L8+20
+	ldr	r3, .L8+40
 	mov	lr, pc
 	bx	r3
 	mov	r3, #256
@@ -99,6 +112,11 @@ initialize:
 .L9:
 	.align	2
 .L8:
+	.word	67109120
+	.word	buttons
+	.word	oldButtons
+	.word	setupInterrupts
+	.word	setupSounds
 	.word	DMANow
 	.word	83886592
 	.word	gwl_SPRITESPal
@@ -127,7 +145,7 @@ goToRules:
 	ldr	r1, .L12+4
 	mov	lr, pc
 	bx	r4
-	mov	r3, #1776
+	mov	r3, #1888
 	mov	r2, #100663296
 	mov	r0, #3
 	ldr	r1, .L12+8
@@ -198,38 +216,47 @@ goToGame:
 	cmp	r3, #1
 	bne	.L24
 	mov	r2, #67108864
-	mov	r1, #23552
-	mov	r3, #256
-	strh	r1, [r2, #8]	@ movhi
+	ldr	r3, .L26+4
+	ldr	r3, [r3]
+	lsl	r3, r3, #24
+	orr	r3, r3, #1073741824
+	lsr	r3, r3, #16
+	strh	r3, [r2, #8]	@ movhi
 	mov	r0, #3
+	mov	r3, #256
 	mov	r2, #83886080
-	ldr	r1, .L26+4
-	ldr	r4, .L26+8
+	ldr	r1, .L26+8
+	ldr	r4, .L26+12
 	mov	lr, pc
 	bx	r4
-	mov	r3, #3344
+	mov	r3, #3888
 	mov	r2, #100663296
 	mov	r0, #3
-	ldr	r1, .L26+12
+	ldr	r1, .L26+16
 	mov	lr, pc
 	bx	r4
 	mov	r3, #2048
 	mov	r0, #3
-	ldr	r2, .L26+16
-	ldr	r1, .L26+20
+	ldr	r2, .L26+20
+	ldr	r1, .L26+24
 	mov	lr, pc
 	bx	r4
 .L24:
 	mov	r2, #2
-	ldr	r3, .L26+24
+	ldr	r3, .L26+28
 	pop	{r4, lr}
 	str	r2, [r3]
 	bx	lr
 .L22:
 	mov	r2, #67108864
-	ldr	r1, .L26+28
-	ldr	r4, .L26+8
-	strh	r1, [r2, #8]	@ movhi
+	ldr	r3, .L26+4
+	ldr	r3, [r3]
+	lsl	r3, r3, #24
+	orr	r3, r3, #1073741824
+	orr	r3, r3, #8388608
+	lsr	r3, r3, #16
+	strh	r3, [r2, #8]	@ movhi
+	ldr	r4, .L26+12
 	mov	r3, #256
 	mov	r2, #83886080
 	mov	r0, #3
@@ -244,7 +271,7 @@ goToGame:
 	bx	r4
 	mov	r3, #4096
 	mov	r0, #3
-	ldr	r2, .L26+16
+	ldr	r2, .L26+20
 	ldr	r1, .L26+44
 	mov	lr, pc
 	bx	r4
@@ -253,13 +280,13 @@ goToGame:
 	.align	2
 .L26:
 	.word	stage
+	.word	screenBlock
 	.word	gwl_BOSSPal
 	.word	DMANow
 	.word	gwl_BOSSTiles
 	.word	100720640
 	.word	gwl_BOSSMap
 	.word	state
-	.word	23680
 	.word	gwl_STAGE1Pal
 	.word	16224
 	.word	gwl_STAGE1Tiles
@@ -302,10 +329,10 @@ start:
 	pop	{r4, r5, r6, lr}
 	b	goToRules
 .L38:
-	bl	goToGame
 	ldr	r3, .L40+12
 	mov	lr, pc
 	bx	r3
+	bl	goToGame
 	ldr	r0, [r4]
 	ldr	r3, .L40+16
 	mov	lr, pc
@@ -342,21 +369,21 @@ goToPause:
 	ldr	r1, .L44+4
 	mov	lr, pc
 	bx	r5
-	mov	r3, #3648
 	mov	r2, #100663296
 	mov	r0, #3
-	ldr	r1, .L44+8
+	ldr	r3, .L44+8
+	ldr	r1, .L44+12
 	mov	lr, pc
 	bx	r5
 	mov	r3, #1024
-	ldr	r2, .L44+12
-	ldr	r1, .L44+16
+	ldr	r2, .L44+16
+	ldr	r1, .L44+20
 	mov	r0, #3
 	mov	lr, pc
 	bx	r5
 	mov	r3, #0
 	mov	r1, #3
-	ldr	r2, .L44+20
+	ldr	r2, .L44+24
 	strh	r3, [r4, #16]	@ movhi
 	strh	r3, [r4, #18]	@ movhi
 	str	r1, [r2]
@@ -367,6 +394,7 @@ goToPause:
 .L44:
 	.word	DMANow
 	.word	gwl_PAUSEBGPal
+	.word	6448
 	.word	gwl_PAUSEBGTiles
 	.word	100720640
 	.word	gwl_PAUSEBGMap
@@ -422,6 +450,9 @@ pause:
 	bl	goToStart
 	b	.L48
 .L56:
+	ldr	r3, .L58+24
+	mov	lr, pc
+	bx	r3
 	bl	goToGame
 	ldrh	r3, [r4]
 	b	.L47
@@ -434,6 +465,7 @@ pause:
 	.word	waitForVBlank
 	.word	DMANow
 	.word	shadowOAM
+	.word	unpauseSound
 	.size	pause, .-pause
 	.align	2
 	.global	goToWin
@@ -456,21 +488,21 @@ goToWin:
 	ldr	r1, .L62+4
 	mov	lr, pc
 	bx	r5
-	mov	r3, #1216
 	mov	r2, #100663296
 	mov	r0, #3
-	ldr	r1, .L62+8
+	ldr	r3, .L62+8
+	ldr	r1, .L62+12
 	mov	lr, pc
 	bx	r5
 	mov	r3, #1024
-	ldr	r2, .L62+12
-	ldr	r1, .L62+16
+	ldr	r2, .L62+16
+	ldr	r1, .L62+20
 	mov	r0, #3
 	mov	lr, pc
 	bx	r5
 	mov	r3, #0
 	mov	r1, #4
-	ldr	r2, .L62+20
+	ldr	r2, .L62+24
 	strh	r3, [r4, #16]	@ movhi
 	strh	r3, [r4, #18]	@ movhi
 	str	r1, [r2]
@@ -481,6 +513,7 @@ goToWin:
 .L62:
 	.word	DMANow
 	.word	gwl_WINBG1Pal
+	.word	7584
 	.word	gwl_WINBG1Tiles
 	.word	100720640
 	.word	gwl_WINBG1Map
@@ -559,7 +592,7 @@ goToLose:
 	ldr	r1, .L75+4
 	mov	lr, pc
 	bx	r4
-	mov	r3, #832
+	mov	r3, #1376
 	mov	r2, #100663296
 	mov	r0, #3
 	ldr	r1, .L75+8
@@ -607,8 +640,8 @@ game:
 	beq	.L88
 .L78:
 	ldr	r3, .L91+8
-	ldr	r3, [r3, #76]
-	cmp	r3, #0
+	ldr	r2, [r3, #76]
+	cmp	r2, #0
 	ble	.L89
 .L79:
 	ldr	r3, .L91+12
@@ -624,13 +657,28 @@ game:
 	bx	r3
 	pop	{r4, lr}
 	bx	lr
+.L89:
+	ldr	r3, [r3, #80]
+	cmp	r3, #0
+	bgt	.L79
+	ldr	r3, .L91+24
+	mov	lr, pc
+	bx	r3
+	bl	goToLose
+	ldr	r3, .L91+12
+	ldr	r3, [r3]
+	cmp	r3, #0
+	beq	.L80
 .L90:
+	ldr	r3, .L91+24
+	mov	lr, pc
+	bx	r3
 	bl	goToWin
 	b	.L80
-.L89:
-	bl	goToLose
-	b	.L79
 .L88:
+	ldr	r3, .L91+28
+	mov	lr, pc
+	bx	r3
 	bl	goToPause
 	b	.L78
 .L92:
@@ -642,6 +690,8 @@ game:
 	.word	bossDefeated
 	.word	updateGame
 	.word	drawGame
+	.word	stopSound
+	.word	pauseSound
 	.size	game, .-game
 	.section	.text.startup,"ax",%progbits
 	.align	2
@@ -754,4 +804,6 @@ lose:
 	.comm	oldButtons,2,2
 	.comm	buttons,2,2
 	.comm	state,4,4
+	.comm	soundB,32,4
+	.comm	soundA,32,4
 	.ident	"GCC: (devkitARM release 53) 9.1.0"
