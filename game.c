@@ -31,15 +31,15 @@ int activeBullets; //dynamically counts the number of active bullets
 LEVEL stage1;
 ENEMY s1Enemies[ENEMYCOUNT_STAGE1];
 LOOTBOX s1Loot[LOOTCOUNT_STAGE1];
-int s1EnemySpawns[] = {200, 120, 480, 120, 616, 80, 112, 88, 592, 160};
+int s1EnemySpawns[] = {200, 120, 376, 192, 648, 80, 112, 88, 592, 160};
 int s1EnemyTypes[] = {BEEMON, BEEMON, BEEMON, CRATE, CRATE};
 DOOR stage1Exit;
 
 LEVEL boss;
 ENEMY bossEnemies[ENEMYCOUNT_BOSS];
 LOOTBOX bossLoot[LOOTCOUNT_BOSS];
-int bossEnemySpawns[] = {440, 50, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 176, 88, 200, 88, 240, 64};
-int bossEnemyTypes[] = {HEADMAN, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, RATTANK, CRATE, CRATE};
+int bossEnemySpawns[] = {440, 50, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 232, 64, 128, 152, 296, 152};
+int bossEnemyTypes[] = {HEADMAN, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEEMON, CRATE, CRATE};
 
 unsigned short hOff;
 unsigned short vOff;
@@ -293,16 +293,15 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
         && collisionMap[OFFSET(player.worldCol, SHIFTDOWN(player.worldRow + player.vspd) + player.height - 1, MAPWIDTH)]
         && collisionMap[OFFSET(player.worldCol + player.width - 1, SHIFTDOWN(player.worldRow + player.vspd) + player.height - 1, MAPWIDTH)]
         && collisionMap[OFFSET(player.worldCol, SHIFTDOWN(player.worldRow + player.vspd), MAPWIDTH)]
-        && collisionMap[OFFSET(player.worldCol + player.width - 1, SHIFTDOWN(player.worldRow + player.vspd), MAPWIDTH)]) 
-    {
-        player.worldRow += player.vspd;
-        
+        && collisionMap[OFFSET(player.worldCol + player.width - 1, SHIFTDOWN(player.worldRow + player.vspd), MAPWIDTH)]) {
+
+        player.worldRow += player.vspd;      
         if (player.vspd < 0) { // going up
             if (vOff + SHIFTDOWN(player.vspd) >= 0 && player.screenRow < 30) {
                 vOff += SHIFTDOWN(player.vspd);
             }
         } else { // going down
-            if (vOff < MAPHEIGHT - SCREENHEIGHT && player.screenRow + player.height > SCREENHEIGHT - 20) {
+            if (vOff < MAPHEIGHT - SCREENHEIGHT && player.screenRow + player.height > SCREENHEIGHT - 50) {
                 vOff += SHIFTDOWN(player.vspd);
             }
         }
@@ -319,8 +318,8 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
 
     if (BUTTON_HELD(BUTTON_LEFT) && !player.dash) {
         if (player.worldCol - player.hspd >= (screenBlock - 28) * 256
-        && collisionMap[OFFSET(player.worldCol - player.hspd, SHIFTDOWN(player.worldRow), MAPWIDTH)]
-        && collisionMap[OFFSET(player.worldCol - player.hspd, SHIFTDOWN(player.worldRow + player.height), MAPWIDTH)]) {
+        && collisionMap[OFFSET(player.worldCol - player.hspd - 1, SHIFTDOWN(player.worldRow), MAPWIDTH)]
+        && collisionMap[OFFSET(player.worldCol - player.hspd - 1, SHIFTDOWN(player.worldRow )+ player.height - 1, MAPWIDTH)]) {
             //update player world position
             player.worldCol -= player.hspd;
         }
@@ -332,7 +331,7 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
     } else if (BUTTON_HELD(BUTTON_RIGHT) && !player.dash) {
         if ((player.worldCol + player.width) < (MAPWIDTH - player.width)
         && collisionMap[OFFSET(player.worldCol + player.width + player.hspd - 1, SHIFTDOWN(player.worldRow), MAPWIDTH)]
-        && collisionMap[OFFSET(player.worldCol + player.width + player.hspd - 1, SHIFTDOWN(player.worldRow + player.height), MAPWIDTH)]) {
+        && collisionMap[OFFSET(player.worldCol + player.width + player.hspd - 1, SHIFTDOWN(player.worldRow) + player.height - 1, MAPWIDTH)]) {
             //update player world position
             player.worldCol += player.hspd;
 
@@ -363,18 +362,18 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
         fire(1, 0);
         playSoundB(gunShot, GUNSHOTLEN, 0);
     }
-    if (BUTTON_PRESSED(BUTTON_A) && !player.dash && player.gunType == PISTOL) {
-        if (player.jumping) {
-            player.vspd = 0;
-        }
-        player.hspd = player.hspd * 2;
-        player.dashTime = 0;
-        player.dash = 1;
-    } else  if (player.dashTime >= 10 && player.dash && player.gunType == PISTOL) {
-        player.hspd = player.hspd / 2;
-        player.dashTime = 0;
-        player.dash = 0;
-    }
+    // if (BUTTON_PRESSED(BUTTON_A) && !player.dash && player.gunType == PISTOL) {
+    //     if (player.jumping) {
+    //         player.vspd = 0;
+    //     }
+    //     player.hspd = player.hspd * 2;
+    //     player.dashTime = 0;
+    //     player.dash = 1;
+    // } else if (player.dashTime >= 10 && player.dash && player.gunType == PISTOL) {
+    //     player.hspd = player.hspd / 2;
+    //     player.dashTime = 0;
+    //     player.dash = 0;
+    // }
 
     //CHEAT ACTIVATION
     if (BUTTON_PRESSED(BUTTON_DOWN) || player.currentHealth <= 0) {
@@ -745,11 +744,11 @@ void fire(int src, ENEMY *e) {
 void drawBullets() {
     for (int i = 0; i < MAXBULLETS; i++) {
         if (bullets[i].active && bullets[i].screenCol > 0 && bullets[i].screenCol < SCREENWIDTH) {
-            shadowOAM[i + player.pistolHealth + 1].attr0 = (ROWMASK & bullets[i].screenRow) | ATTR0_SQUARE;
-            shadowOAM[i + player.pistolHealth + 1].attr1 = (COLMASK & bullets[i].screenCol) | ATTR1_TINY;
-            shadowOAM[i + player.pistolHealth + 1].attr2 = ATTR2_TILEID(0, 6);
+            shadowOAM[i + PISTOL_MAX + 1].attr0 = (ROWMASK & bullets[i].screenRow) | ATTR0_SQUARE;
+            shadowOAM[i + PISTOL_MAX + 1].attr1 = (COLMASK & bullets[i].screenCol) | ATTR1_TINY;
+            shadowOAM[i + PISTOL_MAX + 1].attr2 = ATTR2_TILEID(0, 6);
         } else {
-            shadowOAM[i + player.pistolHealth +  1].attr0 |= ATTR0_HIDE;
+            shadowOAM[i + PISTOL_MAX +  1].attr0 |= ATTR0_HIDE;
         }
     }
 }
@@ -780,7 +779,7 @@ void drawEnemies(LEVEL level, ENEMY enemies[]) {
                 break;
             }
         } else {
-            shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 |= ATTR0_HIDE;
+            shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr0 |= ATTR0_HIDE;
         }
     }
 }
@@ -788,11 +787,11 @@ void drawEnemies(LEVEL level, ENEMY enemies[]) {
 void drawLootBox(LOOTBOX pickups[], LEVEL level) {
     for (int i = 0; i < level.pickups; i++) {
         if (pickups[i].active) {
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr0 = (ROWMASK & pickups[i].screenRow) | ATTR0_SQUARE;
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr1 = (COLMASK & pickups[i].screenCol) | ATTR1_SMALL;
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr2 = ATTR2_TILEID(0, 4);
+            shadowOAM[i + PISTOL_MAX + activeBullets + level.enemies + 1].attr0 = (ROWMASK & pickups[i].screenRow) | ATTR0_SQUARE;
+            shadowOAM[i + PISTOL_MAX + activeBullets + level.enemies + 1].attr1 = (COLMASK & pickups[i].screenCol) | ATTR1_SMALL;
+            shadowOAM[i + PISTOL_MAX + activeBullets + level.enemies + 1].attr2 = ATTR2_TILEID(0, 4);
         } else {
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr0 |= ATTR0_HIDE;
+            shadowOAM[i + PISTOL_MAX + activeBullets + level.enemies + 1].attr0 |= ATTR0_HIDE;
         }
     }
     
@@ -826,7 +825,7 @@ void drawHealthBar() {
     switch (player.gunType)
     {
     case PISTOL:
-        for (int i = 0; i < player.pistolHealth; i++) {
+        for (int i = 0; i < PISTOL_MAX; i++) {
             if (i < player.pistolHealth) {
                 shadowOAM[i + 1].attr0 = (ROWMASK & 0) | ATTR0_SQUARE;
                 shadowOAM[i + 1].attr1 = (COLMASK & (i * 8)) | ATTR1_TINY;
@@ -838,7 +837,7 @@ void drawHealthBar() {
         break;
     
     case SHOTGUN:
-        for (int i = 0; i < player.pistolHealth; i++) {
+        for (int i = 0; i < PISTOL_MAX; i++) {
             if (i < player.shotgunHealth) {
                 shadowOAM[i + 1].attr0 = (ROWMASK & 0) | ATTR0_SQUARE;
                 shadowOAM[i + 1].attr1 = (COLMASK & (i * 8)) | ATTR1_TINY;
@@ -850,14 +849,8 @@ void drawHealthBar() {
         break;
     
     case MINIGUN:
-        for (int i = 0; i < player.pistolHealth; i++) {
-            if (i < player.shotgunHealth) {
-                shadowOAM[i + 1].attr0 = (ROWMASK & 0) | ATTR0_SQUARE;
-                shadowOAM[i + 1].attr1 = (COLMASK & (i * 8)) | ATTR1_TINY;
-                shadowOAM[i + 1].attr2 = ATTR2_TILEID(1, 6);
-            } else {
-                shadowOAM[i + 1].attr0 |= ATTR0_HIDE;
-            }
+        for (int i = 0; i < PISTOL_MAX; i++) {
+            shadowOAM[i + 1].attr0 |= ATTR0_HIDE;
         }
         break;
     }
