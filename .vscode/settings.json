@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "gwl_guidebg1.h": "c",
+        "gwl_startbg1.h": "c",
+        "sound.h": "c"
+    }
+}
