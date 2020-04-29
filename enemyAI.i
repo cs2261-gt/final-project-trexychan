@@ -398,39 +398,39 @@ void animateRatTank(ENEMY *e) {
 }
 
 void drawBeemon(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = (((e->curFrame + 4) * 2)*32+((e->state) * 2));
+    shadowOAM[i + 9 + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr2 = (((e->curFrame + 4) * 2)*32+((e->state) * 2));
 
 }
 
 void drawHeadMan(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (3<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ((e->curFrame * 8)*32+((e->state + 2) * 8));
+    shadowOAM[i + 9 + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (3<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr2 = ((e->curFrame * 8)*32+((e->state + 2) * 8));
 }
 
 void drawBeellet(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = (((e->curFrame + 4) * 2)*32+((e->state) * 2));
+    shadowOAM[i + 9 + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr2 = (((e->curFrame + 4) * 2)*32+((e->state) * 2));
 }
 
 void drawRatTank(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (1<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (2<<14);
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = (((e->curFrame + 8) * 2)*32+(e->state * 4));
+    shadowOAM[i + 9 + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (1<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (2<<14);
+    shadowOAM[i + 9 + activeBullets + 1].attr2 = (((e->curFrame + 8) * 2)*32+(e->state * 4));
 }
 
 void drawCrate(ENEMY *e, int i) {
     if (e->state == CRATEFULL) {
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ((7)*32+(0));
+        shadowOAM[i + 9 + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
+        shadowOAM[i + 9 + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
+        shadowOAM[i + 9 + activeBullets + 1].attr2 = ((7)*32+(0));
     } else if (e->state == CRATEDMG) {
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ((9)*32+(0));
+        shadowOAM[i + 9 + activeBullets + 1].attr0 = (0xFF & e->screenRow) | (0<<14);
+        shadowOAM[i + 9 + activeBullets + 1].attr1 = (0x1FF & e->screenCol) | (1<<14);
+        shadowOAM[i + 9 + activeBullets + 1].attr2 = ((9)*32+(0));
     }
 }
 

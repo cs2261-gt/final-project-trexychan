@@ -345,7 +345,7 @@ extern const unsigned short gwl_STARTBG1Pal[256];
 # 8 "game.c" 2
 # 1 "assets/gwl_GUIDEBG1.h" 1
 # 22 "assets/gwl_GUIDEBG1.h"
-extern const unsigned short gwl_GUIDEBG1Tiles[1888];
+extern const unsigned short gwl_GUIDEBG1Tiles[1824];
 
 
 extern const unsigned short gwl_GUIDEBG1Map[1024];
@@ -375,7 +375,7 @@ extern const unsigned short gwl_GAMEBG1Pal[256];
 # 11 "game.c" 2
 # 1 "assets/gwl_STAGE1.h" 1
 # 22 "assets/gwl_STAGE1.h"
-extern const unsigned short gwl_STAGE1Tiles[16224];
+extern const unsigned short gwl_STAGE1Tiles[15968];
 
 
 extern const unsigned short gwl_STAGE1Map[4096];
@@ -389,7 +389,7 @@ extern const unsigned short gwl_STAGE1CMBitmap[262144];
 # 13 "game.c" 2
 # 1 "assets/gwl_BOSS.h" 1
 # 22 "assets/gwl_BOSS.h"
-extern const unsigned short gwl_BOSSTiles[3888];
+extern const unsigned short gwl_BOSSTiles[3792];
 
 
 extern const unsigned short gwl_BOSSMap[2048];
@@ -435,15 +435,15 @@ int activeBullets;
 LEVEL stage1;
 ENEMY s1Enemies[5];
 LOOTBOX s1Loot[5];
-int s1EnemySpawns[] = {200, 120, 480, 120, 616, 80, 112, 88, 592, 160};
+int s1EnemySpawns[] = {200, 120, 376, 192, 648, 80, 112, 88, 592, 160};
 int s1EnemyTypes[] = {BEEMON, BEEMON, BEEMON, CRATE, CRATE};
 DOOR stage1Exit;
 
 LEVEL boss;
 ENEMY bossEnemies[13];
 LOOTBOX bossLoot[13];
-int bossEnemySpawns[] = {440, 50, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 176, 88, 200, 88, 240, 64};
-int bossEnemyTypes[] = {HEADMAN, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, RATTANK, CRATE, CRATE};
+int bossEnemySpawns[] = {440, 50, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 232, 64, 128, 152, 296, 152};
+int bossEnemyTypes[] = {HEADMAN, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEELLET, BEEMON, CRATE, CRATE};
 
 unsigned short hOff;
 unsigned short vOff;
@@ -697,16 +697,15 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
         && collisionMap[((((player.worldRow + player.vspd) >> 8) + player.height - 1)*(MAPWIDTH)+(player.worldCol))]
         && collisionMap[((((player.worldRow + player.vspd) >> 8) + player.height - 1)*(MAPWIDTH)+(player.worldCol + player.width - 1))]
         && collisionMap[((((player.worldRow + player.vspd) >> 8))*(MAPWIDTH)+(player.worldCol))]
-        && collisionMap[((((player.worldRow + player.vspd) >> 8))*(MAPWIDTH)+(player.worldCol + player.width - 1))])
-    {
-        player.worldRow += player.vspd;
+        && collisionMap[((((player.worldRow + player.vspd) >> 8))*(MAPWIDTH)+(player.worldCol + player.width - 1))]) {
 
+        player.worldRow += player.vspd;
         if (player.vspd < 0) {
             if (vOff + ((player.vspd) >> 8) >= 0 && player.screenRow < 30) {
                 vOff += ((player.vspd) >> 8);
             }
         } else {
-            if (vOff < MAPHEIGHT - 160 && player.screenRow + player.height > 160 - 20) {
+            if (vOff < MAPHEIGHT - 160 && player.screenRow + player.height > 160 - 50) {
                 vOff += ((player.vspd) >> 8);
             }
         }
@@ -723,8 +722,8 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
 
     if ((~((*(volatile unsigned short *)0x04000130)) & ((1<<5))) && !player.dash) {
         if (player.worldCol - player.hspd >= (screenBlock - 28) * 256
-        && collisionMap[((((player.worldRow) >> 8))*(MAPWIDTH)+(player.worldCol - player.hspd))]
-        && collisionMap[((((player.worldRow + player.height) >> 8))*(MAPWIDTH)+(player.worldCol - player.hspd))]) {
+        && collisionMap[((((player.worldRow) >> 8))*(MAPWIDTH)+(player.worldCol - player.hspd - 1))]
+        && collisionMap[((((player.worldRow) >> 8)+ player.height - 1)*(MAPWIDTH)+(player.worldCol - player.hspd - 1))]) {
 
             player.worldCol -= player.hspd;
         }
@@ -736,7 +735,7 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
     } else if ((~((*(volatile unsigned short *)0x04000130)) & ((1<<4))) && !player.dash) {
         if ((player.worldCol + player.width) < (MAPWIDTH - player.width)
         && collisionMap[((((player.worldRow) >> 8))*(MAPWIDTH)+(player.worldCol + player.width + player.hspd - 1))]
-        && collisionMap[((((player.worldRow + player.height) >> 8))*(MAPWIDTH)+(player.worldCol + player.width + player.hspd - 1))]) {
+        && collisionMap[((((player.worldRow) >> 8) + player.height - 1)*(MAPWIDTH)+(player.worldCol + player.width + player.hspd - 1))]) {
 
             player.worldCol += player.hspd;
 
@@ -767,20 +766,7 @@ void updatePlayer(unsigned short collisionMap[], int MAPHEIGHT, int MAPWIDTH) {
         fire(1, 0);
         playSoundB(gunShot, 11008, 0);
     }
-    if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && !player.dash && player.gunType == PISTOL) {
-        if (player.jumping) {
-            player.vspd = 0;
-        }
-        player.hspd = player.hspd * 2;
-        player.dashTime = 0;
-        player.dash = 1;
-    } else if (player.dashTime >= 10 && player.dash && player.gunType == PISTOL) {
-        player.hspd = player.hspd / 2;
-        player.dashTime = 0;
-        player.dash = 0;
-    }
-
-
+# 379 "game.c"
     if ((!(~(oldButtons)&((1<<7))) && (~buttons & ((1<<7)))) || player.currentHealth <= 0) {
         gunslot++;
         if (gunslot % 3 == 0) {
@@ -1149,11 +1135,11 @@ void fire(int src, ENEMY *e) {
 void drawBullets() {
     for (int i = 0; i < 30; i++) {
         if (bullets[i].active && bullets[i].screenCol > 0 && bullets[i].screenCol < 240) {
-            shadowOAM[i + player.pistolHealth + 1].attr0 = (0xFF & bullets[i].screenRow) | (0<<14);
-            shadowOAM[i + player.pistolHealth + 1].attr1 = (0x1FF & bullets[i].screenCol) | (0<<14);
-            shadowOAM[i + player.pistolHealth + 1].attr2 = ((6)*32+(0));
+            shadowOAM[i + 9 + 1].attr0 = (0xFF & bullets[i].screenRow) | (0<<14);
+            shadowOAM[i + 9 + 1].attr1 = (0x1FF & bullets[i].screenCol) | (0<<14);
+            shadowOAM[i + 9 + 1].attr2 = ((6)*32+(0));
         } else {
-            shadowOAM[i + player.pistolHealth + 1].attr0 |= (2<<8);
+            shadowOAM[i + 9 + 1].attr0 |= (2<<8);
         }
     }
 }
@@ -1184,7 +1170,7 @@ void drawEnemies(LEVEL level, ENEMY enemies[]) {
                 break;
             }
         } else {
-            shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 |= (2<<8);
+            shadowOAM[i + 9 + activeBullets + 1].attr0 |= (2<<8);
         }
     }
 }
@@ -1192,11 +1178,11 @@ void drawEnemies(LEVEL level, ENEMY enemies[]) {
 void drawLootBox(LOOTBOX pickups[], LEVEL level) {
     for (int i = 0; i < level.pickups; i++) {
         if (pickups[i].active) {
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr0 = (0xFF & pickups[i].screenRow) | (0<<14);
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr1 = (0x1FF & pickups[i].screenCol) | (1<<14);
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr2 = ((4)*32+(0));
+            shadowOAM[i + 9 + activeBullets + level.enemies + 1].attr0 = (0xFF & pickups[i].screenRow) | (0<<14);
+            shadowOAM[i + 9 + activeBullets + level.enemies + 1].attr1 = (0x1FF & pickups[i].screenCol) | (1<<14);
+            shadowOAM[i + 9 + activeBullets + level.enemies + 1].attr2 = ((4)*32+(0));
         } else {
-            shadowOAM[i + player.pistolHealth + activeBullets + level.enemies + 1].attr0 |= (2<<8);
+            shadowOAM[i + 9 + activeBullets + level.enemies + 1].attr0 |= (2<<8);
         }
     }
 
@@ -1212,7 +1198,7 @@ void changeLevel() {
         playSoundA(panic, 693229, 1);
 
         DMANow(3, gwl_BOSSPal, ((unsigned short *)0x5000000), 512 / 2);
-        DMANow(3, gwl_BOSSTiles, &((charblock *)0x6000000)[0], 7776 / 2);
+        DMANow(3, gwl_BOSSTiles, &((charblock *)0x6000000)[0], 7584 / 2);
         DMANow(3, gwl_BOSSMap, &((screenblock *)0x6000000)[28], 4096 / 2);
 
         initPlayer(boss);
@@ -1230,7 +1216,7 @@ void drawHealthBar() {
     switch (player.gunType)
     {
     case PISTOL:
-        for (int i = 0; i < player.pistolHealth; i++) {
+        for (int i = 0; i < 9; i++) {
             if (i < player.pistolHealth) {
                 shadowOAM[i + 1].attr0 = (0xFF & 0) | (0<<14);
                 shadowOAM[i + 1].attr1 = (0x1FF & (i * 8)) | (0<<14);
@@ -1242,7 +1228,7 @@ void drawHealthBar() {
         break;
 
     case SHOTGUN:
-        for (int i = 0; i < player.pistolHealth; i++) {
+        for (int i = 0; i < 9; i++) {
             if (i < player.shotgunHealth) {
                 shadowOAM[i + 1].attr0 = (0xFF & 0) | (0<<14);
                 shadowOAM[i + 1].attr1 = (0x1FF & (i * 8)) | (0<<14);
@@ -1254,14 +1240,8 @@ void drawHealthBar() {
         break;
 
     case MINIGUN:
-        for (int i = 0; i < player.pistolHealth; i++) {
-            if (i < player.shotgunHealth) {
-                shadowOAM[i + 1].attr0 = (0xFF & 0) | (0<<14);
-                shadowOAM[i + 1].attr1 = (0x1FF & (i * 8)) | (0<<14);
-                shadowOAM[i + 1].attr2 = ((6)*32+(1));
-            } else {
-                shadowOAM[i + 1].attr0 |= (2<<8);
-            }
+        for (int i = 0; i < 9; i++) {
+            shadowOAM[i + 1].attr0 |= (2<<8);
         }
         break;
     }

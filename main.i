@@ -341,7 +341,7 @@ extern const unsigned short gwl_STARTBG1Pal[256];
 # 7 "main.c" 2
 # 1 "assets/gwl_GUIDEBG1.h" 1
 # 22 "assets/gwl_GUIDEBG1.h"
-extern const unsigned short gwl_GUIDEBG1Tiles[1888];
+extern const unsigned short gwl_GUIDEBG1Tiles[1824];
 
 
 extern const unsigned short gwl_GUIDEBG1Map[1024];
@@ -371,7 +371,7 @@ extern const unsigned short gwl_GAMEBG1Pal[256];
 # 10 "main.c" 2
 # 1 "assets/gwl_STAGE1.h" 1
 # 22 "assets/gwl_STAGE1.h"
-extern const unsigned short gwl_STAGE1Tiles[16224];
+extern const unsigned short gwl_STAGE1Tiles[15968];
 
 
 extern const unsigned short gwl_STAGE1Map[4096];
@@ -381,7 +381,7 @@ extern const unsigned short gwl_STAGE1Pal[256];
 # 11 "main.c" 2
 # 1 "assets/gwl_BOSS.h" 1
 # 22 "assets/gwl_BOSS.h"
-extern const unsigned short gwl_BOSSTiles[3888];
+extern const unsigned short gwl_BOSSTiles[3792];
 
 
 extern const unsigned short gwl_BOSSMap[2048];
@@ -530,7 +530,7 @@ void goToRules() {
     (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((28)<<8) | (0<<7) | (0<<14);
 
     DMANow(3, gwl_GUIDEBG1Pal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, gwl_GUIDEBG1Tiles, &((charblock *)0x6000000)[0], 3776 / 2);
+    DMANow(3, gwl_GUIDEBG1Tiles, &((charblock *)0x6000000)[0], 3648 / 2);
     DMANow(3, gwl_GUIDEBG1Map, &((screenblock *)0x6000000)[28], 2048 / 2);
     state = RULES;
 }
@@ -548,7 +548,7 @@ void goToGame() {
         (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((screenBlock)<<8) | (1<<7) | (1<<14);
 
         DMANow(3, gwl_STAGE1Pal, ((unsigned short *)0x5000000), 512 / 2);
-        DMANow(3, gwl_STAGE1Tiles, &((charblock *)0x6000000)[0], 32448 / 2);
+        DMANow(3, gwl_STAGE1Tiles, &((charblock *)0x6000000)[0], 31936 / 2);
         DMANow(3, gwl_STAGE1Map, &((screenblock *)0x6000000)[28], 8192 / 2);
         break;
 
@@ -557,7 +557,7 @@ void goToGame() {
         (*(volatile unsigned short*)0x4000008) = ((0)<<2) | ((screenBlock)<<8) | (0<<7) | (1<<14);
 
         DMANow(3, gwl_BOSSPal, ((unsigned short *)0x5000000), 512 / 2);
-        DMANow(3, gwl_BOSSTiles, &((charblock *)0x6000000)[0], 7776 / 2);
+        DMANow(3, gwl_BOSSTiles, &((charblock *)0x6000000)[0], 7584 / 2);
         DMANow(3, gwl_BOSSMap, &((screenblock *)0x6000000)[28], 4096 / 2);
     }
 

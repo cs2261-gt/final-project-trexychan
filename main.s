@@ -145,7 +145,7 @@ goToRules:
 	ldr	r1, .L12+4
 	mov	lr, pc
 	bx	r4
-	mov	r3, #1888
+	mov	r3, #1824
 	mov	r2, #100663296
 	mov	r0, #3
 	ldr	r1, .L12+8
@@ -229,7 +229,7 @@ goToGame:
 	ldr	r4, .L26+12
 	mov	lr, pc
 	bx	r4
-	mov	r3, #3888
+	mov	r3, #3792
 	mov	r2, #100663296
 	mov	r0, #3
 	ldr	r1, .L26+16
@@ -288,7 +288,7 @@ goToGame:
 	.word	gwl_BOSSMap
 	.word	state
 	.word	gwl_STAGE1Pal
-	.word	16224
+	.word	15968
 	.word	gwl_STAGE1Tiles
 	.word	gwl_STAGE1Map
 	.size	goToGame, .-goToGame

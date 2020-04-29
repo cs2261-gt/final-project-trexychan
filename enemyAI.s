@@ -239,35 +239,31 @@ drawBeemon:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	ldr	r3, .L36
-	ldr	r2, .L36+4
-	ldr	r3, [r3, #76]
-	ldr	ip, [r2]
-	add	r3, r1, r3
-	ldr	r1, [r0, #40]
-	push	{r4, lr}
 	ldr	r2, [r0, #12]
-	add	r3, r3, ip
-	add	ip, r1, #4
-	ldr	r1, [r0, #48]
-	ldr	lr, .L36+8
-	lsl	r2, r2, #23
+	ldr	r3, [r3]
+	push	{r4, lr}
+	ldr	ip, [r0, #40]
+	add	r1, r3, r1
+	lsl	r3, r2, #23
+	ldr	r2, [r0, #48]
+	ldr	lr, .L36+4
+	add	ip, ip, #4
 	ldrb	r4, [r0, #8]	@ zero_extendqisi2
-	add	r3, r3, #1
-	lsr	r2, r2, #23
-	add	r1, r1, ip, lsl #5
-	lsl	r0, r3, #3
-	orr	r2, r2, #16384
-	add	r3, lr, r3, lsl #3
-	lsl	r1, r1, #1
+	add	r1, r1, #10
+	lsr	r3, r3, #23
+	add	r2, r2, ip, lsl #5
+	lsl	r0, r1, #3
+	orr	r3, r3, #16384
+	add	r1, lr, r1, lsl #3
+	lsl	r2, r2, #1
 	strh	r4, [lr, r0]	@ movhi
-	strh	r2, [r3, #2]	@ movhi
-	strh	r1, [r3, #4]	@ movhi
+	strh	r3, [r1, #2]	@ movhi
+	strh	r2, [r1, #4]	@ movhi
 	pop	{r4, lr}
 	bx	lr
 .L37:
 	.align	2
 .L36:
-	.word	player
 	.word	activeBullets
 	.word	shadowOAM
 	.size	drawBeemon, .-drawBeemon
@@ -287,31 +283,27 @@ drawHeadMan:
 	mvn	r2, r2, lsl #18
 	mvn	r2, r2, lsr #18
 	ldr	r3, .L40
-	ldr	ip, .L40+4
-	ldr	r3, [r3, #76]
-	ldr	ip, [ip]
-	add	r3, r1, r3
-	ldr	r1, [r0, #48]
-	str	lr, [sp, #-4]!
+	push	{r4, lr}
+	ldr	r3, [r3]
+	ldr	ip, [r0, #48]
+	ldr	r4, [r0, #40]
+	add	r1, r3, r1
+	add	ip, ip, #2
+	ldr	r3, .L40+4
 	ldrb	lr, [r0, #8]	@ zero_extendqisi2
-	ldr	r0, [r0, #40]
-	add	r3, r3, ip
-	add	r1, r1, #2
-	ldr	ip, .L40+8
-	add	r3, r3, #1
-	add	r1, r1, r0, lsl #5
-	lsl	r1, r1, #3
-	lsl	r0, r3, #3
-	add	r3, ip, r3, lsl #3
-	strh	lr, [ip, r0]	@ movhi
-	strh	r2, [r3, #2]	@ movhi
-	strh	r1, [r3, #4]	@ movhi
-	ldr	lr, [sp], #4
+	add	r1, r1, #10
+	add	ip, ip, r4, lsl #5
+	lsl	r0, r1, #3
+	lsl	ip, ip, #3
+	add	r1, r3, r1, lsl #3
+	strh	lr, [r3, r0]	@ movhi
+	strh	r2, [r1, #2]	@ movhi
+	strh	ip, [r1, #4]	@ movhi
+	pop	{r4, lr}
 	bx	lr
 .L41:
 	.align	2
 .L40:
-	.word	player
 	.word	activeBullets
 	.word	shadowOAM
 	.size	drawHeadMan, .-drawHeadMan
@@ -344,32 +336,28 @@ drawRatTank:
 	mvn	r2, r2, lsl #17
 	mvn	r2, r2, lsr #17
 	ldr	r3, .L45
-	ldr	ip, .L45+4
-	ldr	r3, [r3, #76]
+	ldr	r3, [r3]
 	push	{r4, lr}
-	ldr	ip, [ip]
 	ldr	lr, [r0, #40]
-	add	r3, r1, r3
-	ldr	r1, [r0, #48]
-	ldr	r4, .L45+8
-	add	r3, r3, ip
+	add	r1, r3, r1
+	ldr	r3, [r0, #48]
 	ldrb	ip, [r0, #8]	@ zero_extendqisi2
-	add	r0, lr, #8
-	add	r3, r3, #1
-	add	r1, r1, r0, lsl #4
-	lsl	lr, r3, #3
+	ldr	r4, .L45+4
+	add	lr, lr, #8
+	add	r1, r1, #10
+	add	r3, r3, lr, lsl #4
 	orr	r0, ip, #16384
-	add	r3, r4, r3, lsl #3
-	lsl	r1, r1, #2
+	lsl	lr, r1, #3
+	lsl	r3, r3, #2
+	add	r1, r4, r1, lsl #3
 	strh	r0, [r4, lr]	@ movhi
-	strh	r2, [r3, #2]	@ movhi
-	strh	r1, [r3, #4]	@ movhi
+	strh	r2, [r1, #2]	@ movhi
+	strh	r3, [r1, #4]	@ movhi
 	pop	{r4, lr}
 	bx	lr
 .L46:
 	.align	2
 .L45:
-	.word	player
 	.word	activeBullets
 	.word	shadowOAM
 	.size	drawRatTank, .-drawRatTank
@@ -385,6 +373,7 @@ drawCrate:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	ldr	r3, [r0, #48]
 	cmp	r3, #1
+	moveq	ip, #224
 	str	lr, [sp, #-4]!
 	beq	.L51
 	cmp	r3, #2
@@ -393,39 +382,15 @@ drawCrate:
 	bx	lr
 .L52:
 	mov	ip, #288
-	ldr	r2, .L53
-	ldr	r3, .L53+4
-	ldr	r2, [r2, #76]
-	ldr	r3, [r3]
-	add	r1, r1, r2
-	ldr	r2, [r0, #12]
-	add	r3, r1, r3
-	lsl	r2, r2, #23
-	ldr	r1, .L53+8
-	ldrb	lr, [r0, #8]	@ zero_extendqisi2
-	add	r3, r3, #1
-	lsr	r2, r2, #23
-	lsl	r0, r3, #3
-	orr	r2, r2, #16384
-	add	r3, r1, r3, lsl #3
-	strh	lr, [r1, r0]	@ movhi
-	strh	r2, [r3, #2]	@ movhi
-	strh	ip, [r3, #4]	@ movhi
-	ldr	lr, [sp], #4
-	bx	lr
 .L51:
-	mov	ip, #224
 	ldr	r3, .L53
-	ldr	r2, .L53+4
-	ldr	r3, [r3, #76]
-	ldr	r2, [r2]
-	add	r1, r1, r3
+	ldr	r2, [r3]
 	ldr	r3, [r0, #12]
 	add	r1, r1, r2
 	lsl	r3, r3, #23
-	ldr	r2, .L53+8
+	ldr	r2, .L53+4
 	ldrb	lr, [r0, #8]	@ zero_extendqisi2
-	add	r1, r1, #1
+	add	r1, r1, #10
 	lsr	r3, r3, #23
 	lsl	r0, r1, #3
 	orr	r3, r3, #16384
@@ -438,7 +403,6 @@ drawCrate:
 .L54:
 	.align	2
 .L53:
-	.word	player
 	.word	activeBullets
 	.word	shadowOAM
 	.size	drawCrate, .-drawCrate

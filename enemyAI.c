@@ -78,39 +78,39 @@ void animateRatTank(ENEMY *e) {
 }
 
 void drawBeemon(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ATTR2_TILEID((e->state) * 2, (e->curFrame + 4) * 2);
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr2 = ATTR2_TILEID((e->state) * 2, (e->curFrame + 4) * 2);
 
 }
 
 void drawHeadMan(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_LARGE;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ATTR2_TILEID((e->state + 2) * 8, e->curFrame * 8);
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_LARGE;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr2 = ATTR2_TILEID((e->state + 2) * 8, e->curFrame * 8);
 }
 
 void drawBeellet(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ATTR2_TILEID((e->state) * 2, (e->curFrame + 4) * 2);
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr2 = ATTR2_TILEID((e->state) * 2, (e->curFrame + 4) * 2);
 }
 
 void drawRatTank(ENEMY *e, int i) {
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_WIDE;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_MEDIUM;
-    shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ATTR2_TILEID(e->state * 4, (e->curFrame + 8) * 2);
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_WIDE;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_MEDIUM;
+    shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr2 = ATTR2_TILEID(e->state * 4, (e->curFrame + 8) * 2);
 }
 
 void drawCrate(ENEMY *e, int i) {
     if (e->state == CRATEFULL) {
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ATTR2_TILEID(0, 7);
+        shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
+        shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
+        shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr2 = ATTR2_TILEID(0, 7);
     } else if (e->state == CRATEDMG) {
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
-        shadowOAM[i + player.pistolHealth + activeBullets + 1].attr2 = ATTR2_TILEID(0, 9);
+        shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr0 = (ROWMASK & e->screenRow) | ATTR0_SQUARE;
+        shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr1 = (COLMASK & e->screenCol) | ATTR1_SMALL;
+        shadowOAM[i + PISTOL_MAX + activeBullets + 1].attr2 = ATTR2_TILEID(0, 9);
     }
 }
 
